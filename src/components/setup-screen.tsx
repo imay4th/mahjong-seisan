@@ -1,0 +1,231 @@
+import { useState } from 'react';
+import type { Player, RuleSettings, FeeSplitMode } from '../types.ts';
+
+interface SetupScreenProps {
+  onStart: (
+    players: Player[],
+    settings: RuleSettings,
+    totalFee: number,
+    feeMode: FeeSplitMode,
+  ) => void;
+  onBack: () => void;
+}
+
+type RatePreset = '50' | '100' | 'custom';
+type UmaPreset = '5-10' | '10-20' | '10-30' | '20-30';
+
+const UMA_MAP: Record<UmaPreset, [number, number, number, number]> = {
+  '5-10': [10, 5, -5, -10],
+  '10-20': [20, 10, -10, -20],
+  '10-30': [30, 10, -10, -30],
+  '20-30': [30, 20, -20, -30],
+};
+
+const FEE_MODE_LABELS: Record<FeeSplitMode, string> = {
+  equal: '均等割り',
+  proportional: '負け額に応じて',
+  loser: '最下位負担',
+};
+
+export function SetupScreen({ onStart, onBack }: SetupScreenProps) {
+  const [names, setNames] = useState(['プレイヤー1', 'プレイヤー2', 'プレイヤー3', 'プレイヤー4']);
+  const [ratePreset, setRatePreset] = useState<RatePreset>('50');
+  const [customRate, setCustomRate] = useState('');
+  const [umaPreset, setUmaPreset] = useState<UmaPreset>('10-20');
+  const [oka, setOka] = useState(true);
+  const [totalFee, setTotalFee] = useState('');
+  const [feeMode, setFeeMode] = useState<FeeSplitMode>('equal');
+  const [errors, setErrors] = useState<string[]>([]);
+
+  const handleNameChange = (index: number, value: string) => {
+    const next = [...names];
+    next[index] = value;
+    setNames(next);
+  };
+
+  const validate = (): boolean => {
+    const errs: string[] = [];
+    const trimmed = names.map((n) => n.trim());
+    trimmed.forEach((n, i) => {
+      if (!n) errs.push(`プレイヤー${i + 1}の名前を入力してください。`);
+    });
+    const unique = new Set(trimmed.filter(Boolean));
+    if (unique.size < trimmed.filter(Boolean).length) {
+      errs.push('プレイヤー名が重複しています。');
+    }
+    if (ratePreset === 'custom') {
+      const v = Number(customRate);
+      if (!customRate || isNaN(v) || v <= 0) {
+        errs.push('カスタムレートに正の数を入力してください。');
+      }
+    }
+    const fee = Number(totalFee);
+    if (totalFee && (isNaN(fee) || fee < 0)) {
+      errs.push('場代に0以上の数を入力してください。');
+    }
+    setErrors(errs);
+    return errs.length === 0;
+  };
+
+  const handleSubmit = () => {
+    if (!validate()) return;
+
+    const players: Player[] = names.map((name, i) => ({
+      id: `p${i + 1}`,
+      name: name.trim() || `プレイヤー${i + 1}`,
+    }));
+
+    const ratePer1000 =
+      ratePreset === '50' ? 50 : ratePreset === '100' ? 100 : Number(customRate);
+
+    const settings: RuleSettings = {
+      ratePer1000,
+      uma: UMA_MAP[umaPreset],
+      oka,
+      startingPoints: 25000,
+      returnPoints: 30000,
+    };
+
+    onStart(players, settings, Number(totalFee) || 0, feeMode);
+  };
+
+  return (
+    <div className='screen setup-screen'>
+      <div className='screen-header'>
+        <button className='btn-back' onClick={onBack} aria-label='戻る'>
+          ←
+        </button>
+        <h2 className='screen-title'>ゲーム設定</h2>
+      </div>
+
+      <div className='setup-body'>
+        {/* プレイヤー名 */}
+        <section className='setup-section'>
+          <h3 className='setup-section-title'>プレイヤー名</h3>
+          <div className='player-inputs'>
+            {names.map((name, i) => (
+              <div key={i} className='input-group'>
+                <label className='input-label'>{i + 1}席</label>
+                <input
+                  className='text-input'
+                  type='text'
+                  value={name}
+                  onChange={(e) => handleNameChange(i, e.target.value)}
+                  maxLength={10}
+                  placeholder={`プレイヤー${i + 1}`}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* レート */}
+        <section className='setup-section'>
+          <h3 className='setup-section-title'>レート</h3>
+          <div className='segment-group'>
+            {(['50', '100', 'custom'] as const).map((preset) => (
+              <button
+                key={preset}
+                className={`segment-btn${ratePreset === preset ? ' active' : ''}`}
+                onClick={() => setRatePreset(preset)}
+              >
+                {preset === '50' ? '点5' : preset === '100' ? '点10' : 'カスタム'}
+              </button>
+            ))}
+          </div>
+          {ratePreset === 'custom' && (
+            <div className='input-group mt-sm'>
+              <label className='input-label'>円/千点</label>
+              <input
+                className='text-input num-input'
+                type='number'
+                inputMode='numeric'
+                value={customRate}
+                onChange={(e) => setCustomRate(e.target.value)}
+                min='1'
+                placeholder='例: 30'
+              />
+            </div>
+          )}
+        </section>
+
+        {/* ウマ */}
+        <section className='setup-section'>
+          <h3 className='setup-section-title'>ウマ</h3>
+          <div className='segment-group'>
+            {(['5-10', '10-20', '10-30', '20-30'] as const).map((preset) => (
+              <button
+                key={preset}
+                className={`segment-btn${umaPreset === preset ? ' active' : ''}`}
+                onClick={() => setUmaPreset(preset)}
+              >
+                {preset}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* オカ */}
+        <section className='setup-section'>
+          <h3 className='setup-section-title'>オカ</h3>
+          <div className='toggle-group'>
+            <button
+              className={`segment-btn${oka ? ' active' : ''}`}
+              onClick={() => setOka(true)}
+            >
+              あり（25000持ち30000返し）
+            </button>
+            <button
+              className={`segment-btn${!oka ? ' active' : ''}`}
+              onClick={() => setOka(false)}
+            >
+              なし
+            </button>
+          </div>
+        </section>
+
+        {/* 場代 */}
+        <section className='setup-section'>
+          <h3 className='setup-section-title'>場代</h3>
+          <div className='input-group'>
+            <label className='input-label'>合計金額（円）</label>
+            <input
+              className='text-input num-input'
+              type='number'
+              inputMode='numeric'
+              value={totalFee}
+              onChange={(e) => setTotalFee(e.target.value)}
+              min='0'
+              placeholder='例: 2000'
+            />
+          </div>
+          <div className='fee-mode-group'>
+            {(['equal', 'proportional', 'loser'] as const).map((mode) => (
+              <button
+                key={mode}
+                className={`segment-btn${feeMode === mode ? ' active' : ''}`}
+                onClick={() => setFeeMode(mode)}
+              >
+                {FEE_MODE_LABELS[mode]}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {errors.length > 0 && (
+          <div className='error-list' role='alert'>
+            {errors.map((e, i) => (
+              <p key={i} className='error-msg'>
+                {e}
+              </p>
+            ))}
+          </div>
+        )}
+
+        <button className='btn btn-primary btn-full' onClick={handleSubmit}>
+          ゲーム開始
+        </button>
+      </div>
+    </div>
+  );
+}

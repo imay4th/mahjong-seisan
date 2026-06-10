@@ -33,3 +33,17 @@ export interface Transfer {
   to: string;   // playerId
   amount: number; // 円（正の整数）
 }
+
+// ---- 状態管理型 ----
+
+/** 画面識別子 */
+export type Screen = 'home' | 'setup' | 'game' | 'settlement';
+
+/** ゲーム状態（localStorage に保存される） */
+export interface GameState {
+  players: Player[];
+  settings: RuleSettings;
+  totalFee: number;
+  feeMode: FeeSplitMode;
+  hanchans: HanchanScores[];
+}
