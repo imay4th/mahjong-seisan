@@ -24,13 +24,13 @@
 
 ## Phase 0: 初期セットアップ
 
-### 0.1 プロジェクト雛形作成 [S] — ⬜ 未着手
+### 0.1 プロジェクト雛形作成 [S] — ✅ 完了 (2026-06-11)
 - Vite + React + TypeScript の雛形を一時ディレクトリで作成→本ディレクトリへ展開
 - git init、初回コミット、Vitest 導入
 
-### 0.2 Supabase 制約確認＋テーブル設計 [M] — ⬜ 未着手
-- 無料枠・Realtime・RLS（ルームコード方式のアクセス制御）の事前確認（REQUIREMENTS.md 7章）
-- テーブル設計: rooms / players / hanchans（半荘）/ settings
+### 0.2 Supabase 制約確認＋テーブル設計 [M] — ✅ 完了 (2026-06-11)
+- 設計ドキュメント: `docs/design/supabase-design.md`（無料枠OK、UUID＋招待コードRPC方式）
+- 残課題: Phase 3 実装時に RLS の SELECT 絞り込みを厳密化（doc 内 ⚠️ 参照）
 
 ---
 
@@ -103,6 +103,8 @@ Phase 4:  3.1 → 4.1
 | 日付 | 完了タスク | メモ・発見した問題 |
 |------|-----------|-------------------|
 | 2026-06-11 | — | ヒアリング完了、開発計画策定（ROADMAP / REQUIREMENTS 作成） |
+| 2026-06-11 | 0.1 | Vite+React+TS 雛形作成、Vitest導入、build/lint PASS。残課題: `scaffold-tmp/` フォルダの手動削除（rm が権限拒否のため残置、gitignore・eslint ignore 済み） |
+| 2026-06-11 | 0.2 | Supabase 制約確認＋テーブル設計（docs/design/supabase-design.md）。無料枠OK。注意: 7日無操作で自動pause |
 
 ---
 
@@ -110,8 +112,9 @@ Phase 4:  3.1 → 4.1
 
 > **このセクションはセッション終了時に更新すること。次回セッション開始時にここから再開。**
 
-- [ ] Phase 0.1: プロジェクト雛形作成
 - [ ] Phase 0.2: Supabase 制約確認＋テーブル設計
+- [ ] Phase 1.1: 点数→収支計算（純粋関数＋テスト）
+- [ ] （手動）`scaffold-tmp/` フォルダをエクスプローラーで削除
 
 ---
 
