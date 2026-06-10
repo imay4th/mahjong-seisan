@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import './App.css';
 import type { Screen } from './types.ts';
-import type { Player, RuleSettings, FeeSplitMode } from './types.ts';
+import type { Player, RuleSettings, FeeSplitMode, HanchanScores } from './types.ts';
 import { useGameState } from './hooks/use-game-state.ts';
 import { HomeScreen } from './components/home-screen.tsx';
 import { SetupScreen } from './components/setup-screen.tsx';
@@ -10,7 +10,17 @@ import { SettlementScreen } from './components/settlement-screen.tsx';
 
 function App() {
   const [screen, setScreen] = useState<Screen>('home');
-  const { gameState, startGame, addHanchan, removeHanchan, clearGame } = useGameState();
+  const {
+    gameState,
+    startGame,
+    addHanchan,
+    removeHanchan,
+    updateHanchan,
+    setTotalFee,
+    setPersonalExpense,
+    setDraft,
+    clearGame,
+  } = useGameState();
 
   const handleNewGame = () => {
     setScreen('setup');
@@ -52,8 +62,12 @@ function App() {
       {screen === 'game' && gameState && (
         <GameScreen
           gameState={gameState}
-          onAddHanchan={addHanchan}
+          onAddHanchan={(scores: HanchanScores) => addHanchan(scores)}
           onRemoveHanchan={removeHanchan}
+          onUpdateHanchan={updateHanchan}
+          onSetTotalFee={setTotalFee}
+          onSetPersonalExpense={setPersonalExpense}
+          onSetDraft={setDraft}
           onSettle={() => setScreen('settlement')}
         />
       )}

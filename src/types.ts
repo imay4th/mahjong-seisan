@@ -46,4 +46,8 @@ export interface GameState {
   totalFee: number;
   feeMode: FeeSplitMode;
   hanchans: HanchanScores[];
+  /** 個人分費用: playerId → 円 */
+  personalExpenses: Record<string, number>;
+  /** 編集中のドラフト行: playerId → 持ち点（null = 未入力） */
+  draft: Record<string, number | null>;
 }

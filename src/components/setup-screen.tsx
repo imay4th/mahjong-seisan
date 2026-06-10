@@ -33,7 +33,6 @@ export function SetupScreen({ onStart, onBack }: SetupScreenProps) {
   const [customRate, setCustomRate] = useState('');
   const [umaPreset, setUmaPreset] = useState<UmaPreset>('10-20');
   const [oka, setOka] = useState(true);
-  const [totalFee, setTotalFee] = useState('');
   const [feeMode, setFeeMode] = useState<FeeSplitMode>('equal');
   const [errors, setErrors] = useState<string[]>([]);
 
@@ -59,10 +58,6 @@ export function SetupScreen({ onStart, onBack }: SetupScreenProps) {
         errs.push('カスタムレートに正の数を入力してください。');
       }
     }
-    const fee = Number(totalFee);
-    if (totalFee && (isNaN(fee) || fee < 0)) {
-      errs.push('場代に0以上の数を入力してください。');
-    }
     setErrors(errs);
     return errs.length === 0;
   };
@@ -86,7 +81,7 @@ export function SetupScreen({ onStart, onBack }: SetupScreenProps) {
       returnPoints: 30000,
     };
 
-    onStart(players, settings, Number(totalFee) || 0, feeMode);
+    onStart(players, settings, 0, feeMode);
   };
 
   return (
@@ -184,21 +179,10 @@ export function SetupScreen({ onStart, onBack }: SetupScreenProps) {
           </div>
         </section>
 
-        {/* 場代 */}
+        {/* 場代分担方式 */}
         <section className='setup-section'>
-          <h3 className='setup-section-title'>場代</h3>
-          <div className='input-group'>
-            <label className='input-label'>合計金額（円）</label>
-            <input
-              className='text-input num-input'
-              type='number'
-              inputMode='numeric'
-              value={totalFee}
-              onChange={(e) => setTotalFee(e.target.value)}
-              min='0'
-              placeholder='例: 2000'
-            />
-          </div>
+          <h3 className='setup-section-title'>場代の分担方式</h3>
+          <p className='setup-section-note'>場代金額はゲーム画面の点数表で入力します</p>
           <div className='fee-mode-group'>
             {(['equal', 'proportional', 'loser'] as const).map((mode) => (
               <button

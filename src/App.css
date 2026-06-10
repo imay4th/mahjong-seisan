@@ -344,6 +344,189 @@
   flex: 1;
 }
 
+/* ===== 点数表 ===== */
+.score-table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 8px;
+  /* モバイル375pxで横スクロールなし */
+  border-radius: 12px;
+  border: 1px solid var(--border-card);
+}
+
+.score-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  min-width: 0;
+}
+
+/* ヘッダ行 */
+.score-table-th {
+  padding: 8px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-gold);
+  text-align: center;
+  background: rgba(0, 0, 0, 0.4);
+  border-bottom: 1px solid var(--border-card);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 列幅: 行ラベル列・アクション列は固定、プレイヤー列は均等 */
+.score-table-label-col {
+  width: 44px;
+  min-width: 44px;
+  text-align: left;
+  padding-left: 8px;
+}
+
+.score-table-player-col {
+  /* 残り幅を4等分: 375 - 16*2(padding) - 44(label) - 32(action) = 267px → /4 ≒ 66px */
+  min-width: 62px;
+}
+
+.score-table-action-col {
+  width: 32px;
+  min-width: 32px;
+}
+
+/* データ行 */
+.score-table-row {
+  border-bottom: 1px solid rgba(201, 164, 92, 0.08);
+}
+
+.score-table-row:last-child {
+  border-bottom: none;
+}
+
+.score-table-td {
+  padding: 4px 2px;
+  vertical-align: middle;
+}
+
+.score-table-row-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  padding-left: 8px;
+  white-space: nowrap;
+}
+
+/* スコアセル input */
+.score-cell-input {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid rgba(201, 164, 92, 0.2);
+  border-radius: 6px;
+  color: var(--text-primary);
+  padding: 6px 4px;
+  font-size: 13px;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  min-height: 44px;
+  outline: none;
+  transition: border-color 0.15s;
+  /* スピナー非表示 */
+  -moz-appearance: textfield;
+}
+
+.score-cell-input::-webkit-inner-spin-button,
+.score-cell-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.score-cell-input:focus {
+  border-color: var(--text-gold);
+  background: rgba(201, 164, 92, 0.06);
+}
+
+.score-cell-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+/* ドラフト行 */
+.score-table-draft-row .score-table-row-label {
+  color: var(--text-gold);
+}
+
+.score-cell-draft {
+  border-style: dashed;
+  border-color: rgba(201, 164, 92, 0.35);
+}
+
+/* セル下の円収支表示 */
+.score-cell-yen {
+  display: block;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  line-height: 1.2;
+  margin-top: 2px;
+}
+
+/* yen カラーは既存の .yen-plus / .yen-minus / .yen-zero を流用 */
+
+/* 無効行 */
+.row-invalid .score-cell-input {
+  border-color: rgba(224, 85, 85, 0.5);
+}
+
+/* エラー行 */
+.score-table-error-row .score-table-error-cell {
+  font-size: 11px;
+  color: var(--text-minus);
+  padding: 4px 8px 6px;
+  background: rgba(224, 85, 85, 0.07);
+}
+
+/* 場代行 */
+.score-table-fee-row,
+.score-table-personal-row {
+  background: rgba(201, 164, 92, 0.04);
+}
+
+.score-table-fee-label {
+  font-size: 11px;
+  color: var(--text-gold);
+  font-weight: 600;
+}
+
+.score-table-fee-input-cell {
+  padding: 4px 2px;
+}
+
+.score-table-fee-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.score-cell-fee,
+.score-cell-personal {
+  background: rgba(201, 164, 92, 0.08);
+  border-color: rgba(201, 164, 92, 0.3);
+}
+
+.score-fee-unit {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* 設定画面の補足テキスト */
+.setup-section-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: -4px 0 4px;
+}
+
 /* ===== 清算画面 ===== */
 .settlement-screen {
   gap: 0;
@@ -468,6 +651,18 @@
   font-variant-numeric: tabular-nums;
   font-size: 14px;
   font-weight: 600;
+  color: var(--text-muted);
+}
+
+.fee-breakdown {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.fee-breakdown-item {
+  font-size: 11px;
   color: var(--text-muted);
 }
 
