@@ -55,9 +55,9 @@
 
 ## Phase 3: リアルタイム共有
 
-### 3.1 Supabase 連携 [L] — 🔶 実装済み・実機E2E待ち (2026-06-11)
-- コード実装完了: supabase/schema.sql（RPC方式・rooms遮断）、use-room フック（楽観的更新＋Realtime refetch）、合言葉UI
-- 残: ユーザーの Supabase プロジェクト作成 → .env.local 設定 → メインが実機E2E（2クライアント同期・再接続）
+### 3.1 Supabase 連携 [L] — ✅ 完了 (2026-06-11)
+- supabase/schema.sql（RPC方式・rooms遮断）、use-room フック（楽観的更新＋Realtime refetch）、合言葉UI
+- 実機E2E 8項目 PASS（2クライアント同期・再接続・合言葉参加。docs/verification/phase3-supabase-results.md）
 
 ---
 
@@ -108,6 +108,7 @@ Phase 4:  3.1 → 4.1
 | 2026-06-11 | 2.3 | AIっぽさ監査34件（独立3レビュアー）→改修計画策定（docs/design/ai-slop-*.md）→P1実装（フォント3種導入・金色格下げ・コピー修正・清算ヒーロー化）。検証11項目 PASS（docs/verification/p1-deai-results.md） |
 | 2026-06-11 | 2.4 | P2実装＋ユーザー指示で白基調（紙の精算表）テーマへ全面変更。Step5-6=トークン体系/見出し罫線化（p2-light-theme-results.md 6項目PASS）、Step7-9=ホーム帳面化/設定重要度/清算伝票化＋折りたたみ（p2-structure-results.md 11項目PASS）。P3（Step10: インタラクション/エラー表示）は未実装 |
 | 2026-06-11 | 3.1(実装) | Supabase連携コード実装（schema.sql・use-roomフック・合言葉UI・未設定時ガード）。build/lint/test PASS（phase3-supabase-results.md）。実機E2Eはユーザーのプロジェクト作成待ち |
+| 2026-06-11 | 3.1(E2E) | 実機E2E 8項目 PASS（卓作成・DB保存・Realtime同期×2テーブル・再接続・合言葉参加）。発見: 卓を抜けるのconfirm()不統一、ルーム削除手段なし（軽微、P3候補） |
 
 ---
 
@@ -115,10 +116,8 @@ Phase 4:  3.1 → 4.1
 
 > **このセクションはセッション終了時に更新すること。次回セッション開始時にここから再開。**
 
-- [ ] （手動）Supabase プロジェクト作成 → supabase/schema.sql 実行 → .env.local 設定（手順はセッションログ参照）
-- [ ] Phase 3.1 実機E2E（2クライアント同期・再接続・合言葉参加）
-- [ ] Phase 4.1: GitHub リポジトリ作成 → Vercel デプロイ（環境変数設定込み）
-- [ ] デザイン改修 P3（計画 Step 10）— 任意
+- [ ] Phase 4.1: GitHub リポジトリ作成 → Vercel デプロイ（環境変数設定込み）→ スマホ実機確認
+- [ ] デザイン改修 P3（計画 Step 10）＋ 卓を抜ける確認のカスタムダイアログ統一 — 任意
 - [ ] （手動）`scaffold-tmp/` フォルダをエクスプローラーで削除（未対応なら）
 - [ ] Phase 3.1: Supabase 連携（リアルタイム共有）— ユーザーの Supabase プロジェクト作成が必要
 - [ ] （手動）`scaffold-tmp/` フォルダをエクスプローラーで削除
