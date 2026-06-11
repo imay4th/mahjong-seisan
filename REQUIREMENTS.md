@@ -20,7 +20,7 @@
 | Vite + React | 最新安定版 | フロントエンド（SPA） |
 | TypeScript | 最新安定版 | 型安全な実装（`any` 禁止） |
 | Supabase | Free tier | データ保存＋リアルタイム共有（Postgres + Realtime） |
-| Vercel | Free tier | ホスティング（公開URL、GitHub連携で自動デプロイ） |
+| GitHub Pages | Free | ホスティング（公開URL: https://imay4th.github.io/mahjong-seisan/ 、push で自動デプロイ） |
 | Vitest | 最新安定版 | 清算ロジックのユニットテスト |
 
 > アカウント状況: GitHub・Supabase ともに取得済み（2026-06-11 確認）。
@@ -84,7 +84,7 @@
 |---------|------|------|
 | Supabase 無料枠（DB 500MB / Realtime 同時接続200） | ✅ 確認済 (2026-06-11) | 想定使用量は制限の1%未満。**7日無操作で自動pause**（Studioから1クリック復帰）。詳細: docs/design/supabase-design.md |
 | ログイン無し＋ルームコード方式での RLS（アクセス制御）設計 | ✅ 設計済 | UUID room_id＋招待コードRPC方式。Phase 3 で SELECT 絞り込みを厳密化 |
-| Vercel 無料枠での SPA デプロイ | 未確認 | 静的SPAのため問題ない見込み。Phase 4 で確認 |
+| ホスティング無料枠での SPA デプロイ | ✅ 確認済 (2026-06-11) | ユーザー選択で GitHub Pages に変更。Actions CI で test→build→deploy、動作確認済み |
 
 ## 8. ファイル構成（主要ファイル・予定）
 

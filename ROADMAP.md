@@ -63,9 +63,10 @@
 
 ## Phase 4: 公開
 
-### 4.1 Vercel デプロイ＋実機確認 [S] — ⬜ 未着手
-- 依存: 3.1
-- GitHub リポジトリ作成→Vercel 連携→公開URL発行→スマホ実機で動作確認
+### 4.1 公開（GitHub Pages） [S] — ✅ 完了 (2026-06-11) ※スマホ実機確認はユーザー
+- ユーザー選択で Vercel → GitHub Pages に変更（公開リポジトリ・作業ゼロを優先）
+- リポジトリ: https://github.com/imay4th/mahjong-seisan （push で自動デプロイ）
+- 公開URL: **https://imay4th.github.io/mahjong-seisan/**
 
 ---
 
@@ -109,6 +110,7 @@ Phase 4:  3.1 → 4.1
 | 2026-06-11 | 2.4 | P2実装＋ユーザー指示で白基調（紙の精算表）テーマへ全面変更。Step5-6=トークン体系/見出し罫線化（p2-light-theme-results.md 6項目PASS）、Step7-9=ホーム帳面化/設定重要度/清算伝票化＋折りたたみ（p2-structure-results.md 11項目PASS）。P3（Step10: インタラクション/エラー表示）は未実装 |
 | 2026-06-11 | 3.1(実装) | Supabase連携コード実装（schema.sql・use-roomフック・合言葉UI・未設定時ガード）。build/lint/test PASS（phase3-supabase-results.md）。実機E2Eはユーザーのプロジェクト作成待ち |
 | 2026-06-11 | 3.1(E2E) | 実機E2E 8項目 PASS（卓作成・DB保存・Realtime同期×2テーブル・再接続・合言葉参加）。発見: 卓を抜けるのconfirm()不統一、ルーム削除手段なし（軽微、P3候補） |
+| 2026-06-11 | 4.1 | GitHub Pages 公開完了（Actions CI: test→build→deploy、シークレットでenv注入）。初回 configure-pages の権限エラーは API で Pages 有効化して解消。本番URL 200・正しいbase・anonキーのみ焼き込みを確認 |
 
 ---
 
@@ -116,8 +118,9 @@ Phase 4:  3.1 → 4.1
 
 > **このセクションはセッション終了時に更新すること。次回セッション開始時にここから再開。**
 
-- [ ] Phase 4.1: GitHub リポジトリ作成 → Vercel デプロイ（環境変数設定込み）→ スマホ実機確認
+- [ ] （手動）スマホ実機確認: https://imay4th.github.io/mahjong-seisan/ を開き、卓作成→別のスマホで合言葉参加→同期を確認
 - [ ] デザイン改修 P3（計画 Step 10）＋ 卓を抜ける確認のカスタムダイアログ統一 — 任意
+- [ ] Phase 5（MVP後）: メンバー別通算成績集計 / 3人麻雀対応
 - [ ] （手動）`scaffold-tmp/` フォルダをエクスプローラーで削除（未対応なら）
 - [ ] Phase 3.1: Supabase 連携（リアルタイム共有）— ユーザーの Supabase プロジェクト作成が必要
 - [ ] （手動）`scaffold-tmp/` フォルダをエクスプローラーで削除
