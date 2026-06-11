@@ -410,3 +410,97 @@ input {
 .mt-sm { margin-top: var(--space-3) - 2px; }
 .mt-md { margin-top: var(--space-4); }
 .mt-lg { margin-top: var(--space-5); }
+
+/* ===== ホーム: Supabase未設定警告 ===== */
+.home-config-warning {
+  background: rgba(179, 64, 47, 0.08);
+  border: 1px solid rgba(179, 64, 47, 0.30);
+  border-radius: var(--radius-card);
+  color: var(--text-minus);
+  font-size: 13px;
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+  line-height: 1.5;
+}
+
+/* ===== ホーム: 合言葉で入るセクション ===== */
+.home-join-section {
+  margin-top: var(--space-5);
+}
+
+.home-join-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.home-join-row {
+  display: flex;
+  gap: var(--space-2);
+  align-items: stretch;
+}
+
+.home-join-input {
+  flex: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.home-join-btn {
+  flex-shrink: 0;
+  min-width: 64px;
+  min-height: 44px;
+}
+
+.home-join-error {
+  font-size: 13px;
+  color: var(--text-minus);
+  margin-top: var(--space-2);
+}
+
+.home-resume-invite {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: var(--space-1);
+  font-family: var(--font-mono);
+}
+
+/* ===== ゲーム画面: 合言葉表示 ===== */
+.game-invite-code {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: right;
+  padding: var(--space-2) 0 0;
+  line-height: 1.4;
+  font-family: var(--font-sans);
+}
+
+.game-invite-code-value {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+/* ===== ゲーム画面: 卓を抜けるボタン ===== */
+.btn-leave-room {
+  display: block;
+  margin: var(--space-5) auto 0;
+  padding: var(--space-2) var(--space-4);
+  font-size: 13px;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
+  border-radius: var(--radius-control);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.btn-leave-room:hover {
+  color: var(--text-minus);
+}

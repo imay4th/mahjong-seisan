@@ -4,6 +4,7 @@ import { calcHanchan, sumResults, validateScores } from '../lib/settlement.ts';
 
 interface GameScreenProps {
   gameState: GameState;
+  inviteCode: string | null;
   onAddHanchan: (scores: HanchanScores) => void;
   onRemoveHanchan: (index: number) => void;
   onUpdateHanchan: (index: number, scores: HanchanScores) => void;
@@ -11,10 +12,12 @@ interface GameScreenProps {
   onSetPersonalExpense: (playerId: string, amount: number) => void;
   onSetDraft: (draft: Record<string, number | null>) => void;
   onSettle: () => void;
+  onLeaveRoom: () => void;
 }
 
 export function GameScreen({
   gameState,
+  inviteCode,
   onAddHanchan,
   onRemoveHanchan,
   onUpdateHanchan,
@@ -22,6 +25,7 @@ export function GameScreen({
   onSetPersonalExpense,
   onSetDraft,
   onSettle,
+  onLeaveRoom,
 }: GameScreenProps) {
   const { players, settings, hanchans, totalFee, personalExpenses, draft } = gameState;
   const playerOrder = players.map((p) => p.id);
@@ -178,6 +182,16 @@ export function GameScreen({
 
   return (
     <div className='screen game-screen'>
+      {/* 合言葉表示（右上） */}
+      {inviteCode && (
+        <p className='game-invite-code' aria-label={`合言葉 ${inviteCode}`}>
+          合言葉{' '}
+          <span className='game-invite-code-value' style={{ userSelect: 'text' }}>
+            {inviteCode}
+          </span>
+        </p>
+      )}
+
       {/* 累計収支カード */}
       <div className='cumulative-card'>
         <h2 className='cumulative-title'>ここまでの収支</h2>
@@ -350,6 +364,18 @@ export function GameScreen({
           清算する
         </button>
       )}
+
+      {/* 卓を抜ける */}
+      <button
+        className='btn-leave-room'
+        onClick={() => {
+          if (window.confirm('この卓を抜けますか？（データはサーバーに残ります）')) {
+            onLeaveRoom();
+          }
+        }}
+      >
+        卓を抜ける
+      </button>
     </div>
   );
 }

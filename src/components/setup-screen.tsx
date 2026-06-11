@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import type { Player, RuleSettings, FeeSplitMode } from '../types.ts';
+import type { RuleSettings, FeeSplitMode } from '../types.ts';
 
 interface SetupScreenProps {
+  isCreating?: boolean;
+  createError?: string | null;
   onStart: (
-    players: Player[],
+    names: string[],
     settings: RuleSettings,
     totalFee: number,
     feeMode: FeeSplitMode,
@@ -27,7 +29,7 @@ const FEE_MODE_LABELS: Record<FeeSplitMode, string> = {
   loser: '最下位負担',
 };
 
-export function SetupScreen({ onStart, onBack }: SetupScreenProps) {
+export function SetupScreen({ isCreating = false, createError = null, onStart, onBack }: SetupScreenProps) {
   const [names, setNames] = useState(['プレイヤー1', 'プレイヤー2', 'プレイヤー3', 'プレイヤー4']);
   const [ratePreset, setRatePreset] = useState<RatePreset>('50');
   const [customRate, setCustomRate] = useState('');
@@ -65,10 +67,7 @@ export function SetupScreen({ onStart, onBack }: SetupScreenProps) {
   const handleSubmit = () => {
     if (!validate()) return;
 
-    const players: Player[] = names.map((name, i) => ({
-      id: `p${i + 1}`,
-      name: name.trim() || `プレイヤー${i + 1}`,
-    }));
+    const trimmedNames = names.map((name) => name.trim() || `プレイヤー${names.indexOf(name) + 1}`);
 
     const ratePer1000 =
       ratePreset === '50' ? 50 : ratePreset === '100' ? 100 : Number(customRate);
@@ -81,7 +80,7 @@ export function SetupScreen({ onStart, onBack }: SetupScreenProps) {
       returnPoints: 30000,
     };
 
-    onStart(players, settings, 0, feeMode);
+    onStart(trimmedNames, settings, 0, feeMode);
   };
 
   return (
@@ -221,8 +220,18 @@ export function SetupScreen({ onStart, onBack }: SetupScreenProps) {
           </div>
         )}
 
-        <button className='btn btn-primary btn-full' onClick={handleSubmit}>
-          この設定ではじめる
+        {createError && (
+          <div className='error-list' role='alert'>
+            <p className='error-msg'>{createError}</p>
+          </div>
+        )}
+
+        <button
+          className='btn btn-primary btn-full'
+          onClick={handleSubmit}
+          disabled={isCreating}
+        >
+          {isCreating ? '卓を準備中…' : 'この設定ではじめる'}
         </button>
       </div>
     </div>

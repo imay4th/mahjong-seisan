@@ -1,17 +1,34 @@
+import { useState } from 'react';
 import type { GameState } from '../types.ts';
 import { calcHanchan, sumResults, validateScores } from '../lib/settlement.ts';
 
 interface HomeScreenProps {
-  savedGame: GameState | null;
+  roomInfo: { roomId: string; inviteCode: string } | null;
+  gameState: GameState | null;
+  supabaseConfigured: boolean;
+  joinError: string | null;
   onNewGame: () => void;
   onResume: () => void;
+  onJoinRoom: (code: string) => Promise<boolean>;
 }
 
-export function HomeScreen({ savedGame, onNewGame, onResume }: HomeScreenProps) {
-  // 進行中ゲームの局数・収支幅を算出（既存関数のみ使用）
+export function HomeScreen({
+  roomInfo,
+  gameState,
+  supabaseConfigured,
+  joinError,
+  onNewGame,
+  onResume,
+  onJoinRoom,
+}: HomeScreenProps) {
+  const [joinCode, setJoinCode] = useState('');
+  const [isJoining, setIsJoining] = useState(false);
+  const [localJoinError, setLocalJoinError] = useState<string | null>(null);
+
+  // 進行中ゲームの局数・収支幅を算出
   const resumeInfo = (() => {
-    if (!savedGame) return null;
-    const { players, settings, hanchans } = savedGame;
+    if (!gameState) return null;
+    const { players, settings, hanchans } = gameState;
     const playerOrder = players.map((p) => p.id);
     const validResults = hanchans
       .filter((scores) => validateScores(scores, settings) === null)
@@ -27,19 +44,43 @@ export function HomeScreen({ savedGame, onNewGame, onResume }: HomeScreenProps) 
     return { hanchanCount, maxPlus, maxMinus };
   })();
 
-  const playerNames = savedGame ? savedGame.players.map((p) => p.name).join('・') : '';
+  const playerNames = gameState ? gameState.players.map((p) => p.name).join('・') : '';
+
+  const handleJoinSubmit = async () => {
+    const trimmed = joinCode.trim().toUpperCase();
+    if (!trimmed) {
+      setLocalJoinError('合言葉を入力してください');
+      return;
+    }
+    setIsJoining(true);
+    setLocalJoinError(null);
+    const ok = await onJoinRoom(trimmed);
+    setIsJoining(false);
+    if (!ok) {
+      setLocalJoinError('その合言葉の卓が見つかりません');
+    }
+  };
+
+  const displayJoinError = localJoinError ?? joinError;
 
   return (
     <div className='screen home-screen'>
-      {/* タイトルバー: 麻タイル（小）+ 明朝タイトル + 強罫線 */}
+      {/* タイトルバー */}
       <div className='home-title-row'>
         <div className='mahjong-tile mahjong-tile-sm'>麻</div>
         <h1 className='app-title'>麻雀清算</h1>
       </div>
       <div className='home-title-rule' />
 
-      {/* 前回の卓カード */}
-      {savedGame && resumeInfo && (
+      {/* Supabase 未設定の警告 */}
+      {!supabaseConfigured && (
+        <div className='home-config-warning' role='alert'>
+          サーバー未設定のため卓を立てられません（.env.local を設定してください）
+        </div>
+      )}
+
+      {/* 前回の卓カード（roomInfo が存在する場合） */}
+      {roomInfo && gameState && resumeInfo && (
         <div className='sheet home-resume-sheet'>
           <p className='home-resume-label'>前回の卓</p>
           <p className='home-resume-players'>{playerNames}</p>
@@ -58,9 +99,9 @@ export function HomeScreen({ savedGame, onNewGame, onResume }: HomeScreenProps) 
               </>
             )}
           </p>
+          <p className='home-resume-invite'>合言葉: {roomInfo.inviteCode}</p>
           <button className='btn btn-secondary home-resume-btn' onClick={onResume}>
             つづきを開く
-            {/* CSS三角チェブロン */}
             <svg
               className='btn-chevron'
               width='16'
@@ -82,9 +123,48 @@ export function HomeScreen({ savedGame, onNewGame, onResume }: HomeScreenProps) 
       )}
 
       {/* 新規開始ボタン */}
-      <button className='btn btn-primary btn-full home-new-btn' onClick={onNewGame}>
+      <button
+        className='btn btn-primary btn-full home-new-btn'
+        onClick={onNewGame}
+        disabled={!supabaseConfigured}
+      >
         卓を立てる
       </button>
+
+      {/* 合言葉で入る */}
+      <div className='home-join-section'>
+        <p className='home-join-label'>合言葉で入る</p>
+        <div className='home-join-row'>
+          <input
+            className='text-input home-join-input'
+            type='text'
+            value={joinCode}
+            onChange={(e) => {
+              setJoinCode(e.target.value.toUpperCase());
+              setLocalJoinError(null);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleJoinSubmit();
+            }}
+            maxLength={6}
+            placeholder='AX7K2R'
+            aria-label='合言葉（6文字）'
+            disabled={!supabaseConfigured || isJoining}
+          />
+          <button
+            className='btn btn-secondary home-join-btn'
+            onClick={handleJoinSubmit}
+            disabled={!supabaseConfigured || isJoining}
+          >
+            {isJoining ? '接続中…' : '入る'}
+          </button>
+        </div>
+        {displayJoinError && (
+          <p className='home-join-error' role='alert'>
+            {displayJoinError}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
