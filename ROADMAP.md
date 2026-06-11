@@ -106,7 +106,8 @@ Phase 4:  3.1 → 4.1
 | 2026-06-11 | 1.1, 1.2 | 清算計算コア実装＋テスト30件 PASS（サブ委譲→メイン独立検証済み）。円換算は10円単位丸め＋1位調整でゼロサム保証 |
 | 2026-06-11 | 2.1 | UI4画面実装（麻雀卓風ダーク）。E2Eフロー・計算値・localStorage復元すべてPASS。残: スクリーンショット未取得（preview_screenshotタイムアウト障害）→ユーザーの目視確認待ち |
 | 2026-06-11 | 2.2 | ユーザー要望で点数表方式に改修（スコアシート入力・4人目タップ自動入力・場代行・個人分行）。E2E 10項目 PASS（docs/verification/phase2-2-score-table-results.md） |
-| 2026-06-11 | 2.3 | AIっぽさ監査34件（独立3レビュアー）→改修計画策定（docs/design/ai-slop-*.md）→P1実装（フォント3種導入・金色格下げ・コピー修正・清算ヒーロー化）。検証11項目 PASS（docs/verification/p1-deai-results.md）。P2（Step5-9: トークン体系/見出し罫線化/ホーム再構成/設定重要度/伝票化）・P3（Step10）は未実装 |
+| 2026-06-11 | 2.3 | AIっぽさ監査34件（独立3レビュアー）→改修計画策定（docs/design/ai-slop-*.md）→P1実装（フォント3種導入・金色格下げ・コピー修正・清算ヒーロー化）。検証11項目 PASS（docs/verification/p1-deai-results.md） |
+| 2026-06-11 | 2.4 | P2実装＋ユーザー指示で白基調（紙の精算表）テーマへ全面変更。Step5-6=トークン体系/見出し罫線化（p2-light-theme-results.md 6項目PASS）、Step7-9=ホーム帳面化/設定重要度/清算伝票化＋折りたたみ（p2-structure-results.md 11項目PASS）。P3（Step10: インタラクション/エラー表示）は未実装 |
 
 ---
 
@@ -115,7 +116,8 @@ Phase 4:  3.1 → 4.1
 > **このセクションはセッション終了時に更新すること。次回セッション開始時にここから再開。**
 
 - [ ] （手動）ブラウザで見た目を確認: http://localhost:5173 （スマホ風に確認するなら F12 → デバイスツールバー）
-- [ ] デザイン改修 P2（docs/design/ai-slop-remediation-plan.md の Step 5〜9）— ユーザーの見た目確認後に着手判断
+- [ ] デザイン改修 P3（計画 Step 10: ボタン押下表現の差別化・エラー表示・focus-visible）— 任意
+- [ ] 改修計画 docs/design/ai-slop-remediation-plan.md に「白基調へ変更」の追記（コンセプトの正本化）
 - [ ] Phase 3.1: Supabase 連携（リアルタイム共有）— ユーザーの Supabase プロジェクト作成が必要
 - [ ] （手動）`scaffold-tmp/` フォルダをエクスプローラーで削除
 

@@ -88,15 +88,24 @@ export function SetupScreen({ onStart, onBack }: SetupScreenProps) {
     <div className='screen setup-screen'>
       <div className='screen-header'>
         <button className='btn-back' onClick={onBack} aria-label='戻る'>
-          ←
+          <svg width='20' height='20' viewBox='0 0 20 20' fill='none' aria-hidden='true'>
+            <path
+              d='M12 4L7 10L12 16'
+              stroke='currentColor'
+              strokeWidth='2'
+              strokeLinecap='round'
+              strokeLinejoin='round'
+            />
+          </svg>
         </button>
         <h2 className='screen-title'>卓の設定</h2>
       </div>
 
       <div className='setup-body'>
+        {/* ── 必須項目グループ（強罫線見出し） ── */}
         {/* プレイヤー名 */}
-        <section className='setup-section'>
-          <h3 className='setup-section-title'>プレイヤー名</h3>
+        <section className='setup-section setup-section-primary'>
+          <h3 className='setup-section-title setup-section-title-strong'>プレイヤー名</h3>
           <div className='player-inputs'>
             {names.map((name, i) => (
               <div key={i} className='input-group'>
@@ -115,8 +124,8 @@ export function SetupScreen({ onStart, onBack }: SetupScreenProps) {
         </section>
 
         {/* レート */}
-        <section className='setup-section'>
-          <h3 className='setup-section-title'>レート</h3>
+        <section className='setup-section setup-section-primary'>
+          <h3 className='setup-section-title setup-section-title-strong'>レート</h3>
           <div className='segment-group'>
             {(['50', '100', 'custom'] as const).map((preset) => (
               <button
@@ -144,57 +153,63 @@ export function SetupScreen({ onStart, onBack }: SetupScreenProps) {
           )}
         </section>
 
-        {/* ウマ */}
-        <section className='setup-section'>
-          <h3 className='setup-section-title'>ウマ</h3>
-          <div className='segment-group'>
-            {(['5-10', '10-20', '10-30', '20-30'] as const).map((preset) => (
-              <button
-                key={preset}
-                className={`segment-btn${umaPreset === preset ? ' active' : ''}`}
-                onClick={() => setUmaPreset(preset)}
-              >
-                {preset}
-              </button>
-            ))}
-          </div>
-        </section>
+        {/* ── ルール詳細グループ（弱罫線・インデント） ── */}
+        <div className='setup-rule-details'>
+          <h3 className='setup-rule-details-heading'>ルール詳細</h3>
 
-        {/* オカ */}
-        <section className='setup-section'>
-          <h3 className='setup-section-title'>オカ</h3>
-          <div className='toggle-group'>
-            <button
-              className={`segment-btn${oka ? ' active' : ''}`}
-              onClick={() => setOka(true)}
-            >
-              あり（25000持ち30000返し）
-            </button>
-            <button
-              className={`segment-btn${!oka ? ' active' : ''}`}
-              onClick={() => setOka(false)}
-            >
-              なし
-            </button>
-          </div>
-        </section>
+          {/* ウマ */}
+          <section className='setup-section setup-section-sub'>
+            <h4 className='setup-section-title'>ウマ</h4>
+            <div className='segment-group'>
+              {(['5-10', '10-20', '10-30', '20-30'] as const).map((preset) => (
+                <button
+                  key={preset}
+                  className={`segment-btn${umaPreset === preset ? ' active' : ''}`}
+                  onClick={() => setUmaPreset(preset)}
+                >
+                  {preset}
+                </button>
+              ))}
+            </div>
+          </section>
 
-        {/* 場代分担方式 */}
-        <section className='setup-section'>
-          <h3 className='setup-section-title'>場代の分担方式</h3>
-          <p className='setup-section-note'>場代金額はゲーム画面の点数表で入力します</p>
-          <div className='fee-mode-group'>
-            {(['equal', 'proportional', 'loser'] as const).map((mode) => (
+          {/* オカ */}
+          <section className='setup-section setup-section-sub'>
+            <h4 className='setup-section-title'>オカ</h4>
+            <div className='segment-group'>
               <button
-                key={mode}
-                className={`segment-btn${feeMode === mode ? ' active' : ''}`}
-                onClick={() => setFeeMode(mode)}
+                className={`segment-btn${oka ? ' active' : ''}`}
+                onClick={() => setOka(true)}
               >
-                {FEE_MODE_LABELS[mode]}
+                あり
               </button>
-            ))}
-          </div>
-        </section>
+              <button
+                className={`segment-btn${!oka ? ' active' : ''}`}
+                onClick={() => setOka(false)}
+              >
+                なし
+              </button>
+            </div>
+            <p className='setup-section-note'>25000持ち30000返し</p>
+          </section>
+
+          {/* 場代分担方式 */}
+          <section className='setup-section setup-section-sub'>
+            <h4 className='setup-section-title'>場代の分担方式</h4>
+            <p className='setup-section-note'>場代金額はゲーム画面の点数表で入力します</p>
+            <div className='fee-mode-group'>
+              {(['equal', 'proportional', 'loser'] as const).map((mode) => (
+                <button
+                  key={mode}
+                  className={`segment-btn${feeMode === mode ? ' active' : ''}`}
+                  onClick={() => setFeeMode(mode)}
+                >
+                  {FEE_MODE_LABELS[mode]}
+                </button>
+              ))}
+            </div>
+          </section>
+        </div>
 
         {errors.length > 0 && (
           <div className='error-list' role='alert'>
@@ -207,7 +222,7 @@ export function SetupScreen({ onStart, onBack }: SetupScreenProps) {
         )}
 
         <button className='btn btn-primary btn-full' onClick={handleSubmit}>
-          ゲーム開始
+          この設定ではじめる
         </button>
       </div>
     </div>

@@ -1,44 +1,62 @@
-/* ===== CSS変数（麻雀卓風ダーク） ===== */
+/* ===== CSS変数（白基調・紙のスコアシート） ===== */
 :root {
-  /* 背景 */
-  --bg-app: #0a2e23;
-  --bg-gradient: linear-gradient(160deg, #0a2e23 0%, #123f30 60%, #0d3526 100%);
-  --bg-card: #0f3b2c;
-  --bg-card-hover: #144535;
-  --bg-overlay: rgba(0, 0, 0, 0.65);
-  --bg-modal: #0f3b2c;
-  --bg-input: rgba(0, 0, 0, 0.35);
-  --bg-segment: rgba(0, 0, 0, 0.3);
-  --bg-segment-active: #c9a45c;
+  /* 紙 */
+  --bg-app: #f3efe5;        /* 生成りの紙（画面地） */
+  --bg-sheet: #fdfcf8;      /* 区画・カード面（やや白い紙） */
+  --bg-input: #ffffff;
+  --bg-segment: #ece7d9;    /* 非アクティブセグメント */
+  /* 後方互換エイリアス */
+  --bg-card: var(--bg-sheet);
+  --bg-card-hover: #f5f2ea;
+  --bg-overlay: rgba(47, 44, 37, 0.55);
+  --bg-modal: var(--bg-sheet);
 
-  /* テキスト */
-  --text-primary: #f0ece2;
-  --text-secondary: #a8b8a4;
-  --text-muted: #7a9180;
-  --text-gold: #c9a45c;
-  --text-plus: #c9a45c;
-  --text-minus: #e05555;
-  --text-zero: #a8b8a4;
+  /* 墨と朱 */
+  --text-primary: #2f2c25;  /* 墨 */
+  --text-secondary: #75705f;
+  --text-muted: #75705f;
+  --text-plus: #1d6b4e;     /* プラス収支 = 深緑 */
+  --text-minus: #b3402f;    /* マイナス収支 = 朱 */
+  --text-zero: #75705f;
+
+  /* 卓の名残（アクセント） */
+  --accent: #1d5c45;        /* 深緑: primaryボタン背景・アクティブセグメント */
+  --accent-contrast: #fdfcf8;
+  --accent-fee: #8a6d2a;    /* 店に払う額の見出し */
 
   /* ボーダー */
-  --border: rgba(201, 164, 92, 0.2);
-  --border-input: rgba(201, 164, 92, 0.35);
-  --border-card: rgba(201, 164, 92, 0.15);
+  --rule: 1px solid rgba(47, 44, 37, 0.18);
+  --rule-strong: 2px solid rgba(47, 44, 37, 0.45);
+  --border: rgba(47, 44, 37, 0.18);
+  --border-input: rgba(47, 44, 37, 0.30);
+  --border-card: rgba(47, 44, 37, 0.18);
 
   /* ボタン */
-  --btn-primary-bg: #c9a45c;
-  --btn-primary-text: #0a2e23;
-  --btn-secondary-bg: rgba(201, 164, 92, 0.15);
-  --btn-secondary-text: #c9a45c;
+  --btn-primary-bg: var(--accent);
+  --btn-primary-text: var(--accent-contrast);
+  --btn-secondary-bg: rgba(29, 92, 69, 0.10);
+  --btn-secondary-text: var(--accent);
   --btn-ghost-bg: transparent;
-  --btn-ghost-text: #a8b8a4;
-  --btn-danger-bg: rgba(224, 85, 85, 0.2);
-  --btn-danger-text: #e05555;
+  --btn-ghost-text: var(--text-secondary);
+  --btn-danger-bg: rgba(179, 64, 47, 0.10);
+  --btn-danger-text: var(--text-minus);
+
+  /* セグメントアクティブ */
+  --bg-segment-active: var(--accent);
 
   /* タイポグラフィ */
   --font-display: 'Zen Old Mincho', serif;
   --font-sans: 'Zen Kaku Gothic New', system-ui, sans-serif;
   --font-mono: 'DM Mono', 'Roboto Mono', ui-monospace, monospace;
+
+  /* 寸法トークン */
+  --radius-card: 4px;       /* 紙の角 */
+  --radius-control: 8px;    /* 押す部品 */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
 
   /* 数値表示用 */
   font-variant-numeric: tabular-nums;
@@ -60,8 +78,7 @@ body {
   font-size: 16px;
   line-height: 1.5;
   color: var(--text-primary);
-  background: var(--bg-gradient);
-  background-attachment: fixed;
+  background: var(--bg-app);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -110,21 +127,21 @@ input {
   max-width: 480px;
   width: 100%;
   margin: 0 auto;
-  padding: 0 16px 32px;
+  padding: 0 var(--space-4) 32px;
 }
 
 .screen-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px 0 8px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 20px;
+  gap: var(--space-3);
+  padding: var(--space-4) 0 var(--space-2);
+  border-bottom: var(--rule-strong);
+  margin-bottom: var(--space-5);
 }
 
 .screen-title {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
   color: var(--text-primary);
   font-family: var(--font-display);
 }
@@ -136,12 +153,13 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   color: var(--text-secondary);
   font-size: 20px;
   background: var(--bg-segment);
   transition: background 0.2s;
   flex-shrink: 0;
+  border: var(--rule);
 }
 
 .btn-back:hover {
@@ -153,9 +171,9 @@ input {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 12px 20px;
-  border-radius: 10px;
+  gap: var(--space-2) - 2px;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-control);
   font-weight: 600;
   font-size: 15px;
   min-height: 44px;
@@ -164,7 +182,8 @@ input {
 }
 
 .btn:active {
-  transform: scale(0.97);
+  transform: translateY(1px);
+  box-shadow: none;
 }
 
 .btn-primary {
@@ -183,19 +202,19 @@ input {
 }
 
 .btn-secondary:hover {
-  background: rgba(201, 164, 92, 0.25);
+  background: rgba(29, 92, 69, 0.16);
 }
 
 .btn-ghost {
   background: var(--btn-ghost-bg);
   color: var(--btn-ghost-text);
-  border: 1px solid var(--border);
+  border: var(--rule);
 }
 
 .btn-danger {
   background: var(--btn-danger-bg);
   color: var(--btn-danger-text);
-  border: 1px solid rgba(224, 85, 85, 0.35);
+  border: 1px solid rgba(179, 64, 47, 0.30);
 }
 
 .btn-full {
@@ -203,13 +222,13 @@ input {
 }
 
 .btn-lg {
-  padding: 16px 24px;
+  padding: var(--space-4) var(--space-5);
   font-size: 16px;
   min-height: 52px;
 }
 
 .btn-sm {
-  padding: 8px 14px;
+  padding: var(--space-2) 14px;
   font-size: 13px;
   min-height: 36px;
 }
@@ -229,36 +248,36 @@ input {
 /* ===== セグメントボタン ===== */
 .segment-group {
   display: flex;
-  gap: 6px;
+  gap: var(--space-2) - 2px;
   flex-wrap: wrap;
 }
 
 .segment-btn {
   padding: 9px 14px;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   font-size: 14px;
   font-weight: 500;
   background: var(--bg-segment);
   color: var(--text-secondary);
-  border: 1px solid var(--border);
+  border: var(--rule);
   min-height: 44px;
   transition: background 0.15s, color 0.15s;
 }
 
 .segment-btn.active {
   background: var(--bg-segment-active);
-  color: var(--btn-primary-text);
+  color: var(--accent-contrast);
   border-color: var(--bg-segment-active);
 }
 
 .segment-btn:hover:not(.active) {
-  background: rgba(201, 164, 92, 0.1);
-  color: var(--text-gold);
+  background: rgba(29, 92, 69, 0.08);
+  color: var(--accent);
 }
 
 .toggle-group {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   flex-direction: column;
 }
 
@@ -270,14 +289,14 @@ input {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
-  margin-top: 10px;
+  margin-top: var(--space-3) - 2px;
 }
 
 /* ===== テキスト入力 ===== */
 .text-input {
   background: var(--bg-input);
   border: 1px solid var(--border-input);
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   color: var(--text-primary);
   padding: 10px 14px;
   width: 100%;
@@ -288,11 +307,13 @@ input {
 }
 
 .text-input:focus {
-  border-color: var(--text-gold);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(29, 92, 69, 0.12);
 }
 
 .text-input::placeholder {
-  color: var(--text-muted);
+  color: var(--text-secondary);
+  opacity: 0.7;
 }
 
 .num-input {
@@ -304,7 +325,7 @@ input {
 .input-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-2) - 2px;
 }
 
 .input-label {
@@ -317,24 +338,34 @@ input {
 .error-msg {
   color: var(--text-minus);
   font-size: 13px;
-  padding: 8px 12px;
-  background: rgba(224, 85, 85, 0.1);
-  border-radius: 6px;
+  padding: var(--space-2) var(--space-3);
+  background: rgba(179, 64, 47, 0.08);
+  border-radius: var(--radius-control);
   border-left: 3px solid var(--text-minus);
 }
 
 .error-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-2) - 2px;
 }
 
-/* ===== カード ===== */
+/* ===== シート（カード統合クラス） ===== */
+.sheet {
+  background: var(--bg-sheet);
+  border: 1px solid rgba(47, 44, 37, 0.18);
+  border-radius: var(--radius-card);
+  padding: var(--space-4);
+  box-shadow: 0 1px 2px rgba(47, 44, 37, 0.08);
+}
+
+/* 後方互換: 既存クラス名を .sheet と同一値に統一 */
 .card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-card);
-  border-radius: 12px;
-  padding: 16px;
+  background: var(--bg-sheet);
+  border: 1px solid rgba(47, 44, 37, 0.18);
+  border-radius: var(--radius-card);
+  padding: var(--space-4);
+  box-shadow: 0 1px 2px rgba(47, 44, 37, 0.08);
 }
 
 /* ===== ダイアログ ===== */
@@ -346,22 +377,23 @@ input {
   align-items: center;
   justify-content: center;
   z-index: 200;
-  padding: 16px;
+  padding: var(--space-4);
 }
 
 .dialog {
   background: var(--bg-modal);
   border: 1px solid var(--border-card);
-  border-radius: 16px;
-  padding: 24px;
+  border-radius: var(--radius-card);
+  padding: var(--space-5);
   width: 100%;
   max-width: 320px;
+  box-shadow: 0 4px 16px rgba(47, 44, 37, 0.20);
 }
 
 .dialog-msg {
   font-size: 16px;
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5) - 4px;
   color: var(--text-primary);
 }
 
@@ -375,6 +407,6 @@ input {
 }
 
 /* ===== ユーティリティ ===== */
-.mt-sm { margin-top: 10px; }
-.mt-md { margin-top: 16px; }
-.mt-lg { margin-top: 24px; }
+.mt-sm { margin-top: var(--space-3) - 2px; }
+.mt-md { margin-top: var(--space-4); }
+.mt-lg { margin-top: var(--space-5); }

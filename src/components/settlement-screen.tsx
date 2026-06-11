@@ -64,7 +64,7 @@ export function SettlementScreen({
         <h2 className='screen-title'>清算結果</h2>
       </div>
 
-      {/* 送金（ヒーロー） */}
+      {/* 送金（伝票ヒーロー） */}
       <div className='transfers-card transfers-card-hero'>
         <h3 className='transfers-title'>精算 — だれがだれに</h3>
         {transfers.length === 0 ? (
@@ -73,19 +73,49 @@ export function SettlementScreen({
           <div className='transfers-list'>
             {transfers.map((t, i) => (
               <div key={i} className='transfer-item'>
-                <span className='transfer-from'>{playerName(t.from)}</span>
-                <span className='transfer-arrow'>→</span>
-                <span className='transfer-to'>{playerName(t.to)}</span>
-                <span className='transfer-amount transfer-amount-hero'>
-                  {t.amount.toLocaleString()}円
-                </span>
+                {/* 名前行: 送金元 ──→ 受取人 */}
+                <div className='transfer-parties'>
+                  <span className='transfer-from'>{playerName(t.from)}</span>
+                  <span className='transfer-line' aria-hidden='true'>
+                    <svg
+                      className='transfer-arrow-svg'
+                      viewBox='0 0 32 14'
+                      fill='none'
+                      preserveAspectRatio='none'
+                    >
+                      <line
+                        x1='0'
+                        y1='7'
+                        x2='26'
+                        y2='7'
+                        stroke='currentColor'
+                        strokeWidth='1.5'
+                      />
+                      <path
+                        d='M22 2L29 7L22 12'
+                        stroke='currentColor'
+                        strokeWidth='1.5'
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                      />
+                    </svg>
+                  </span>
+                  <span className='transfer-to'>{playerName(t.to)}</span>
+                </div>
+                {/* 金額: 主役・右揃え */}
+                <div className='transfer-amount-row'>
+                  <span className='transfer-amount transfer-amount-hero'>
+                    {t.amount.toLocaleString()}
+                    <span className='transfer-amount-unit'>円</span>
+                  </span>
+                </div>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* 各自が店に払う額（場代負担 + 個人分） */}
+      {/* 各自が店に払う額（場代負担 + 個人分）: 開いたまま */}
       {hasStorePay && (
         <div className='fee-card'>
           <h3 className='fee-card-title'>各自が店に払う額</h3>
@@ -117,87 +147,89 @@ export function SettlementScreen({
         </div>
       )}
 
-      {/* 収支のうちわけ */}
-      <div className='result-card'>
-        <h3 className='result-card-title'>収支のうちわけ</h3>
-        <div className='result-table'>
-          <div className='result-header'>
-            <span></span>
-            {players.map((p) => (
-              <span key={p.id} className='result-col-head'>
-                {p.name}
-              </span>
-            ))}
-          </div>
-
-          <div className='result-row'>
-            <span className='result-row-label'>麻雀収支</span>
-            {players.map((p) => {
-              const v = mahjongResult[p.id] ?? 0;
-              return (
-                <span
-                  key={p.id}
-                  className={`result-val ${v >= 0 ? 'val-plus' : 'val-minus'}`}
-                >
-                  {v >= 0 ? '+' : ''}
-                  {v.toLocaleString()}
+      {/* 収支のうちわけ: <details> 折りたたみ */}
+      <details className='result-details'>
+        <summary className='result-details-summary'>うちわけを見る</summary>
+        <div className='result-card'>
+          <div className='result-table'>
+            <div className='result-header'>
+              <span></span>
+              {players.map((p) => (
+                <span key={p.id} className='result-col-head'>
+                  {p.name}
                 </span>
-              );
-            })}
-          </div>
+              ))}
+            </div>
 
-          {feeShare && (
             <div className='result-row'>
-              <span className='result-row-label'>場代負担</span>
+              <span className='result-row-label'>麻雀収支</span>
               {players.map((p) => {
-                const v = feeShare[p.id] ?? 0;
+                const v = mahjongResult[p.id] ?? 0;
                 return (
-                  <span key={p.id} className='result-val val-fee'>
-                    -{v.toLocaleString()}
+                  <span
+                    key={p.id}
+                    className={`result-val ${v >= 0 ? 'val-plus' : 'val-minus'}`}
+                  >
+                    {v >= 0 ? '+' : ''}
+                    {v.toLocaleString()}
                   </span>
                 );
               })}
             </div>
-          )}
 
-          {hasPersonalExpenses && (
-            <div className='result-row'>
-              <span className='result-row-label'>個人分</span>
+            {feeShare && (
+              <div className='result-row'>
+                <span className='result-row-label'>場代負担</span>
+                {players.map((p) => {
+                  const v = feeShare[p.id] ?? 0;
+                  return (
+                    <span key={p.id} className='result-val val-fee'>
+                      -{v.toLocaleString()}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+
+            {hasPersonalExpenses && (
+              <div className='result-row'>
+                <span className='result-row-label'>個人分</span>
+                {players.map((p) => {
+                  const v = personalExpenses[p.id] ?? 0;
+                  return (
+                    <span key={p.id} className='result-val val-fee'>
+                      {v > 0 ? `-${v.toLocaleString()}` : '—'}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+
+            <div className='result-row result-final'>
+              <span className='result-row-label'>最終収支</span>
               {players.map((p) => {
-                const v = personalExpenses[p.id] ?? 0;
+                const v = finalResult[p.id] ?? 0;
                 return (
-                  <span key={p.id} className='result-val val-fee'>
-                    {v > 0 ? `-${v.toLocaleString()}` : '—'}
+                  <span
+                    key={p.id}
+                    className={`result-val result-val-final ${v >= 0 ? 'val-plus' : 'val-minus'}`}
+                  >
+                    {v >= 0 ? '+' : ''}
+                    {v.toLocaleString()}
                   </span>
                 );
               })}
             </div>
-          )}
-
-          <div className='result-row result-final'>
-            <span className='result-row-label'>最終収支</span>
-            {players.map((p) => {
-              const v = finalResult[p.id] ?? 0;
-              return (
-                <span
-                  key={p.id}
-                  className={`result-val result-val-final ${v >= 0 ? 'val-plus' : 'val-minus'}`}
-                >
-                  {v >= 0 ? '+' : ''}
-                  {v.toLocaleString()}
-                </span>
-              );
-            })}
           </div>
         </div>
-      </div>
+      </details>
 
       <div className='settlement-actions'>
         <button className='btn btn-secondary' onClick={onBack}>
           ゲームに戻る
         </button>
         <button className='btn btn-primary' onClick={onNewGame}>
-          新しいゲームを始める
+          新しい卓へ
         </button>
       </div>
     </div>

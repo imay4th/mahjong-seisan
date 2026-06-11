@@ -1,59 +1,116 @@
 /* ===== ホーム画面 ===== */
 .home-screen {
-  align-items: center;
-  justify-content: center;
-  gap: 48px;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 0;
   min-height: 100svh;
-  padding-top: 48px;
+  padding-top: var(--space-5);
   padding-bottom: 64px;
 }
 
-.home-header {
+/* タイトル行: 麻タイル（小）+ 明朝タイトル */
+.home-title-row {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  text-align: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
 }
 
+/* 麻タイル（小）: タイトル横の添え物 */
 .mahjong-tile {
-  width: 72px;
-  height: 88px;
-  background: linear-gradient(145deg, #f5f0e8, #e8e0cc);
-  border-radius: 10px;
+  width: 48px;
+  height: 58px;
+  background: var(--bg-sheet);
+  border-radius: var(--radius-card);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 36px;
+  font-size: 24px;
   font-weight: 700;
-  color: #1a3a2a;
+  color: var(--text-primary);
   box-shadow:
-    0 2px 0 #c4bca8,
-    0 6px 14px rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  letter-spacing: 0;
+    0 2px 0 rgba(47, 44, 37, 0.25),
+    0 3px 8px rgba(47, 44, 37, 0.14);
+  border: 1px solid rgba(47, 44, 37, 0.20);
+  flex-shrink: 0;
+}
+
+/* 後方互換: sm バリアント（明示指定時） */
+.mahjong-tile-sm {
+  width: 48px;
+  height: 58px;
+  font-size: 24px;
 }
 
 .app-title {
-  font-size: 36px;
+  font-size: 28px;
   font-weight: 700;
   color: var(--text-primary);
   font-family: var(--font-display);
-  letter-spacing: 0.05em;
 }
 
-.app-subtitle {
-  font-size: 14px;
-  color: var(--text-muted);
-  margin-top: -4px;
+/* タイトル下の強罫線 */
+.home-title-rule {
+  border: none;
+  border-top: var(--rule-strong);
+  margin-bottom: var(--space-5);
 }
 
-.home-actions {
+/* 前回の卓シート */
+.home-resume-sheet {
+  margin-bottom: var(--space-5);
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  width: 100%;
-  max-width: 320px;
+  gap: var(--space-2);
+}
+
+.home-resume-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.04em;
+}
+
+.home-resume-players {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+}
+
+.home-resume-meta {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.home-resume-plus {
+  color: var(--text-plus);
+  font-weight: 600;
+}
+
+.home-resume-minus {
+  color: var(--text-minus);
+  font-weight: 600;
+}
+
+.home-resume-btn {
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+}
+
+/* チェブロン SVG */
+.btn-chevron {
+  flex-shrink: 0;
+}
+
+/* 新規開始ボタン */
+.home-new-btn {
+  margin-top: auto;
 }
 
 /* ===== 設定画面 ===== */
@@ -64,21 +121,58 @@
 .setup-body {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--space-5);
   padding-bottom: 32px;
+}
+
+/* 必須項目区画 */
+.setup-section-primary {
+  gap: var(--space-4);
 }
 
 .setup-section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
+/* 必須項目見出し: 強罫線 */
+.setup-section-title-strong {
+  border-bottom: var(--rule-strong) !important;
+}
+
+/* 見出し統一スタイル */
 .setup-section-title {
-  font-size: 14px;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  padding-bottom: 6px;
+  border-bottom: var(--rule);
+}
+
+/* ルール詳細グループ: インデント + 弱罫線 */
+.setup-rule-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-left: var(--space-3);
+  border-left: 2px solid rgba(47, 44, 37, 0.12);
+}
+
+.setup-rule-details-heading {
+  font-family: var(--font-display);
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
-  letter-spacing: 0.08em;
+  margin: 0 0 calc(var(--space-4) * -1) 0;
+  padding-bottom: 4px;
+  border-bottom: var(--rule);
+}
+
+/* 副次区画: 内部gap */
+.setup-section-sub {
+  gap: var(--space-4);
 }
 
 .player-inputs {
@@ -90,44 +184,59 @@
 /* ===== ゲーム画面 ===== */
 .game-screen {
   gap: 0;
-  padding-top: 16px;
+  padding-top: var(--space-4);
 }
 
-/* 累計収支カード */
+/* 累計収支カード: .sheet と同一値 */
 .cumulative-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-card);
-  border-radius: 14px;
-  padding: 16px;
-  margin-bottom: 20px;
+  background: var(--bg-sheet);
+  border: 1px solid rgba(47, 44, 37, 0.18);
+  border-radius: var(--radius-card);
+  padding: var(--space-4);
+  box-shadow: 0 1px 2px rgba(47, 44, 37, 0.08);
+  margin-bottom: var(--space-5) - 4px;
 }
 
+/* Step 6: 見出し統一 */
 .cumulative-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  letter-spacing: 0.08em;
-  margin-bottom: 12px;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  padding-bottom: 6px;
+  border-bottom: var(--rule);
+  margin-bottom: var(--space-3);
 }
 
 .cumulative-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: var(--space-3) - 2px;
 }
 
+/* card-in-card 廃止 → 罫線区切りグリッド */
 .cumulative-item {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  padding: 10px;
-  background: var(--bg-segment);
-  border-radius: 8px;
+  padding: var(--space-3) - 2px var(--space-2);
+  background: transparent;
+  border-radius: 0;
+  border-bottom: var(--rule);
+}
+
+.cumulative-item:nth-child(odd) {
+  border-right: var(--rule);
+  padding-right: var(--space-3);
+}
+
+.cumulative-item:nth-last-child(-n+2) {
+  border-bottom: none;
 }
 
 .cumulative-name {
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -146,37 +255,41 @@
 
 /* 半荘履歴 */
 .hanchan-list {
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
+/* Step 6: 見出し統一 */
 .list-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  letter-spacing: 0.08em;
-  margin-bottom: 10px;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  padding-bottom: 6px;
+  border-bottom: var(--rule);
+  margin-bottom: var(--space-3) - 2px;
 }
 
 .empty-msg {
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 14px;
   text-align: center;
-  padding: 24px 0;
+  padding: var(--space-5) 0;
 }
 
 .hanchan-item {
-  background: var(--bg-card);
-  border: 1px solid var(--border-card);
-  border-radius: 10px;
-  padding: 12px;
-  margin-bottom: 8px;
+  background: var(--bg-sheet);
+  border: 1px solid rgba(47, 44, 37, 0.18);
+  border-radius: var(--radius-card);
+  padding: var(--space-3);
+  margin-bottom: var(--space-2);
+  box-shadow: 0 1px 2px rgba(47, 44, 37, 0.06);
 }
 
 .hanchan-item-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 .hanchan-label {
@@ -191,15 +304,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
-  color: var(--text-muted);
+  border-radius: var(--radius-control);
+  color: var(--text-secondary);
   font-size: 18px;
-  background: rgba(224, 85, 85, 0.1);
+  background: rgba(179, 64, 47, 0.08);
   transition: background 0.15s, color 0.15s;
 }
 
 .btn-delete:hover {
-  background: rgba(224, 85, 85, 0.25);
+  background: rgba(179, 64, 47, 0.18);
   color: var(--text-minus);
 }
 
@@ -212,7 +325,7 @@
 .hanchan-score-item {
   display: grid;
   grid-template-columns: 1fr auto auto;
-  gap: 8px;
+  gap: var(--space-2);
   align-items: baseline;
 }
 
@@ -228,7 +341,7 @@
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 13px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   text-align: right;
 }
 
@@ -256,11 +369,12 @@
   z-index: 100;
 }
 
+/* ボトムシート: 上角のみ 16px（例外） */
 .form-modal {
   background: var(--bg-modal);
-  border-top: 1px solid var(--border-card);
-  border-radius: 20px 20px 0 0;
-  padding: 24px 20px 40px;
+  border-top: var(--rule-strong);
+  border-radius: 16px 16px 0 0;
+  padding: var(--space-5) var(--space-5) - 4px 40px;
   width: 100%;
   max-width: 480px;
   max-height: 90svh;
@@ -271,25 +385,26 @@
 .hanchan-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .form-title {
   font-size: 16px;
   font-weight: 700;
-  color: var(--text-gold);
+  color: var(--text-primary);
+  font-family: var(--font-display);
 }
 
 .score-inputs {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .score-input-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .score-input-row .text-input {
@@ -298,16 +413,16 @@
 
 .score-unit {
   font-size: 14px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   white-space: nowrap;
 }
 
 .score-total {
   font-size: 14px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   background: var(--bg-segment);
-  border-radius: 8px;
-  padding: 8px 12px;
+  border-radius: var(--radius-control);
+  padding: var(--space-2) var(--space-3);
   text-align: right;
 }
 
@@ -324,7 +439,7 @@
 .score-total-expected {
   margin-left: 4px;
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .auto-fill-btn {
@@ -345,10 +460,10 @@
 .score-table-wrapper {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  margin-bottom: 8px;
-  /* モバイル375pxで横スクロールなし */
-  border-radius: 12px;
-  border: 1px solid var(--border-card);
+  margin-bottom: var(--space-2);
+  border-radius: var(--radius-card);
+  border: 1px solid rgba(47, 44, 37, 0.18);
+  background: var(--bg-sheet);
 }
 
 .score-table {
@@ -360,13 +475,13 @@
 
 /* ヘッダ行 */
 .score-table-th {
-  padding: 8px 4px;
+  padding: var(--space-2) 4px;
   font-size: 12px;
   font-weight: 600;
   color: var(--text-secondary);
   text-align: center;
-  background: rgba(0, 0, 0, 0.4);
-  border-bottom: 1px solid var(--border-card);
+  background: var(--bg-segment);
+  border-bottom: var(--rule-strong);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -377,11 +492,10 @@
   width: 44px;
   min-width: 44px;
   text-align: left;
-  padding-left: 8px;
+  padding-left: var(--space-2);
 }
 
 .score-table-player-col {
-  /* 残り幅を4等分: 375 - 16*2(padding) - 44(label) - 32(action) = 267px → /4 ≒ 66px */
   min-width: 62px;
 }
 
@@ -392,7 +506,7 @@
 
 /* データ行 */
 .score-table-row {
-  border-bottom: 1px solid rgba(201, 164, 92, 0.08);
+  border-bottom: var(--rule);
 }
 
 .score-table-row:last-child {
@@ -406,8 +520,8 @@
 
 .score-table-row-label {
   font-size: 11px;
-  color: var(--text-muted);
-  padding-left: 8px;
+  color: var(--text-secondary);
+  padding-left: var(--space-2);
   white-space: nowrap;
 }
 
@@ -415,8 +529,8 @@
 .score-cell-input {
   width: 100%;
   background: var(--bg-input);
-  border: 1px solid rgba(201, 164, 92, 0.2);
-  border-radius: 6px;
+  border: 1px solid rgba(47, 44, 37, 0.20);
+  border-radius: var(--radius-card);
   color: var(--text-primary);
   padding: 6px 4px;
   font-size: 13px;
@@ -437,23 +551,23 @@
 }
 
 .score-cell-input:focus {
-  border-color: var(--text-gold);
-  background: rgba(201, 164, 92, 0.06);
+  border-color: var(--accent);
+  background: rgba(29, 92, 69, 0.04);
 }
 
 .score-cell-input::placeholder {
-  color: var(--text-muted);
+  color: var(--text-secondary);
   opacity: 0.5;
 }
 
 /* ドラフト行 */
 .score-table-draft-row .score-table-row-label {
-  color: var(--text-gold);
+  color: var(--accent);
 }
 
 .score-cell-draft {
   border-style: dashed;
-  border-color: rgba(201, 164, 92, 0.35);
+  border-color: rgba(29, 92, 69, 0.35);
 }
 
 /* セル下の円収支表示 */
@@ -467,30 +581,28 @@
   margin-top: 2px;
 }
 
-/* yen カラーは既存の .yen-plus / .yen-minus / .yen-zero を流用 */
-
 /* 無効行 */
 .row-invalid .score-cell-input {
-  border-color: rgba(224, 85, 85, 0.5);
+  border-color: rgba(179, 64, 47, 0.50);
 }
 
 /* エラー行 */
 .score-table-error-row .score-table-error-cell {
   font-size: 11px;
   color: var(--text-minus);
-  padding: 4px 8px 6px;
-  background: rgba(224, 85, 85, 0.07);
+  padding: 4px var(--space-2) 6px;
+  background: rgba(179, 64, 47, 0.06);
 }
 
-/* 場代行 */
+/* 場代行・個人分行: 薄い生成り背景で半荘行と区別 */
 .score-table-fee-row,
 .score-table-personal-row {
-  background: rgba(201, 164, 92, 0.04);
+  background: rgba(236, 231, 217, 0.50);
 }
 
 .score-table-fee-label {
   font-size: 11px;
-  color: var(--text-gold);
+  color: var(--accent-fee);
   font-weight: 600;
 }
 
@@ -506,13 +618,13 @@
 
 .score-cell-fee,
 .score-cell-personal {
-  background: rgba(201, 164, 92, 0.08);
-  border-color: rgba(201, 164, 92, 0.3);
+  background: rgba(138, 109, 42, 0.06);
+  border-color: rgba(138, 109, 42, 0.25);
 }
 
 .score-fee-unit {
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -520,7 +632,7 @@
 /* 設定画面の補足テキスト */
 .setup-section-note {
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   margin: -4px 0 4px;
 }
 
@@ -530,27 +642,32 @@
   padding-top: 0;
 }
 
+/* result-card: .sheet と同一値 */
 .result-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-card);
-  border-radius: 14px;
-  padding: 16px;
-  margin-bottom: 16px;
+  background: var(--bg-sheet);
+  border: 1px solid rgba(47, 44, 37, 0.18);
+  border-radius: var(--radius-card);
+  padding: var(--space-4);
+  box-shadow: 0 1px 2px rgba(47, 44, 37, 0.08);
+  margin-bottom: var(--space-4);
   overflow-x: auto;
 }
 
+/* Step 6: 見出し統一 */
 .result-card-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  letter-spacing: 0.08em;
-  margin-bottom: 12px;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  padding-bottom: 6px;
+  border-bottom: var(--rule);
+  margin-bottom: var(--space-3);
 }
 
 .result-table {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
   min-width: 300px;
 }
 
@@ -569,7 +686,7 @@
 
 .result-col-head {
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -591,11 +708,11 @@
 
 .val-plus { color: var(--text-plus); }
 .val-minus { color: var(--text-minus); }
-.val-fee { color: var(--text-muted); }
+.val-fee { color: var(--text-secondary); }
 
 .result-final {
-  border-top: 1px solid var(--border);
-  padding-top: 8px;
+  border-top: var(--rule-strong);
+  padding-top: var(--space-2);
   margin-top: 4px;
 }
 
@@ -604,36 +721,40 @@
   font-weight: 700;
 }
 
-/* 場代カード */
+/* 場代カード: .sheet と同一値 */
 .fee-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-card);
-  border-radius: 14px;
-  padding: 16px;
-  margin-bottom: 16px;
+  background: var(--bg-sheet);
+  border: 1px solid rgba(47, 44, 37, 0.18);
+  border-radius: var(--radius-card);
+  padding: var(--space-4);
+  box-shadow: 0 1px 2px rgba(47, 44, 37, 0.08);
+  margin-bottom: var(--space-4);
 }
 
+/* Step 6: 場代見出しのみ accent-fee 色 */
 .fee-card-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-gold);
-  letter-spacing: 0.08em;
-  margin-bottom: 12px;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--accent-fee);
+  padding-bottom: 6px;
+  border-bottom: var(--rule);
+  margin-bottom: var(--space-3);
 }
 
 .fee-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .fee-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 10px;
+  padding: var(--space-2) var(--space-3) - 2px;
   background: var(--bg-segment);
-  border-radius: 8px;
+  border-radius: var(--radius-control);
 }
 
 .fee-name {
@@ -646,7 +767,7 @@
   font-variant-numeric: tabular-nums;
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .fee-breakdown {
@@ -658,80 +779,105 @@
 
 .fee-breakdown-item {
   font-size: 11px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .fee-total {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 10px;
-  border-top: 1px solid var(--border);
+  padding: var(--space-2) var(--space-3) - 2px;
+  border-top: var(--rule);
   margin-top: 4px;
   font-size: 13px;
   color: var(--text-secondary);
   font-weight: 600;
 }
 
-/* 送金指示 */
+/* 送金指示カード: .sheet と同一値 */
 .transfers-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-card);
-  border-radius: 14px;
-  padding: 16px;
-  margin-bottom: 20px;
+  background: var(--bg-sheet);
+  border: 1px solid rgba(47, 44, 37, 0.18);
+  border-radius: var(--radius-card);
+  padding: var(--space-4);
+  box-shadow: 0 1px 2px rgba(47, 44, 37, 0.08);
+  margin-bottom: var(--space-5);
 }
 
+/* Step 6: 見出し統一 */
 .transfers-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  letter-spacing: 0.08em;
-  margin-bottom: 12px;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  padding-bottom: 6px;
+  border-bottom: var(--rule);
+  margin-bottom: var(--space-3);
 }
 
 .transfers-empty {
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 14px;
   text-align: center;
-  padding: 8px 0;
+  padding: var(--space-2) 0;
 }
 
 .transfers-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-4);
 }
 
+/* 伝票1行: 不透明背景でスクショ共有を想定 */
 .transfer-item {
   display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-sheet);
+  border-radius: var(--radius-control);
+  border: var(--rule);
+}
+
+/* 名前行: 送金元 ──→ 受取人 */
+.transfer-parties {
+  display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
-  background: var(--bg-segment);
-  border-radius: 10px;
-  border: 1px solid var(--border-card);
+  gap: var(--space-2);
 }
 
 .transfer-from,
 .transfer-to {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-primary);
-  flex: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
-.transfer-to {
-  text-align: right;
-}
-
-.transfer-arrow {
-  font-size: 20px;
+/* 引き線エリア */
+.transfer-line {
+  flex: 1;
+  display: flex;
+  align-items: center;
   color: var(--text-secondary);
-  flex-shrink: 0;
+  min-width: 24px;
+}
+
+.transfer-arrow-svg {
+  width: 100%;
+  height: 14px;
+}
+
+/* 金額行: 右揃え・主役 */
+.transfer-amount-row {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: var(--space-1);
+  border-top: var(--rule);
 }
 
 .transfer-amount {
@@ -739,22 +885,78 @@
   font-variant-numeric: tabular-nums;
   font-size: 18px;
   font-weight: 700;
-  color: var(--text-gold);
-  white-space: nowrap;
-  min-width: 90px;
+  color: var(--accent);
   text-align: right;
 }
 
 /* 送金ヒーロー化 */
 .transfers-card-hero {
-  background: var(--bg-card);
-  border: 2px solid var(--border-card);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  border-width: 2px;
+  border-color: rgba(29, 92, 69, 0.30);
+  box-shadow: 0 2px 8px rgba(29, 92, 69, 0.12);
 }
 
 .transfer-amount-hero {
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 700;
+}
+
+.transfer-amount-unit {
+  font-size: 16px;
+  font-weight: 600;
+  margin-left: 2px;
+}
+
+/* 収支のうちわけ: details 折りたたみ */
+.result-details {
+  margin-bottom: var(--space-4);
+}
+
+.result-details-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  min-height: 44px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  list-style: none;
+  border-radius: var(--radius-control);
+  background: var(--bg-segment);
+  border: var(--rule);
+  transition: background 0.15s;
+  user-select: none;
+}
+
+.result-details-summary::-webkit-details-marker {
+  display: none;
+}
+
+.result-details-summary::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.result-details[open] .result-details-summary::before {
+  transform: rotate(45deg);
+}
+
+.result-details-summary:hover {
+  background: var(--bg-card-hover);
+}
+
+.result-details .result-card {
+  margin-top: var(--space-2);
+  margin-bottom: 0;
 }
 
 .settlement-actions {
