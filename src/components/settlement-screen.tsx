@@ -64,9 +64,62 @@ export function SettlementScreen({
         <h2 className='screen-title'>清算結果</h2>
       </div>
 
-      {/* 最終結果表 */}
+      {/* 送金（ヒーロー） */}
+      <div className='transfers-card transfers-card-hero'>
+        <h3 className='transfers-title'>精算 — だれがだれに</h3>
+        {transfers.length === 0 ? (
+          <p className='transfers-empty'>貸し借りなし。きれいに終局</p>
+        ) : (
+          <div className='transfers-list'>
+            {transfers.map((t, i) => (
+              <div key={i} className='transfer-item'>
+                <span className='transfer-from'>{playerName(t.from)}</span>
+                <span className='transfer-arrow'>→</span>
+                <span className='transfer-to'>{playerName(t.to)}</span>
+                <span className='transfer-amount transfer-amount-hero'>
+                  {t.amount.toLocaleString()}円
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 各自が店に払う額（場代負担 + 個人分） */}
+      {hasStorePay && (
+        <div className='fee-card'>
+          <h3 className='fee-card-title'>各自が店に払う額</h3>
+          <div className='fee-list'>
+            {players.map((p) => {
+              const fee = feeShare ? (feeShare[p.id] ?? 0) : 0;
+              const personal = personalExpenses[p.id] ?? 0;
+              const total = fee + personal;
+              return (
+                <div key={p.id} className='fee-item'>
+                  <span className='fee-name'>{p.name}</span>
+                  <div className='fee-breakdown'>
+                    {fee > 0 && (
+                      <span className='fee-breakdown-item'>場代 {fee.toLocaleString()}円</span>
+                    )}
+                    {personal > 0 && (
+                      <span className='fee-breakdown-item'>個人分 {personal.toLocaleString()}円</span>
+                    )}
+                    <span className='fee-amount'>{total.toLocaleString()}円</span>
+                  </div>
+                </div>
+              );
+            })}
+            <div className='fee-total'>
+              <span>合計</span>
+              <span>{storePayTotal.toLocaleString()}円</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 収支のうちわけ */}
       <div className='result-card'>
-        <h3 className='result-card-title'>収支内訳</h3>
+        <h3 className='result-card-title'>収支のうちわけ</h3>
         <div className='result-table'>
           <div className='result-header'>
             <span></span>
@@ -137,59 +190,6 @@ export function SettlementScreen({
             })}
           </div>
         </div>
-      </div>
-
-      {/* 各自が店に払う額（場代負担 + 個人分） */}
-      {hasStorePay && (
-        <div className='fee-card'>
-          <h3 className='fee-card-title'>各自が店に払う額</h3>
-          <div className='fee-list'>
-            {players.map((p) => {
-              const fee = feeShare ? (feeShare[p.id] ?? 0) : 0;
-              const personal = personalExpenses[p.id] ?? 0;
-              const total = fee + personal;
-              return (
-                <div key={p.id} className='fee-item'>
-                  <span className='fee-name'>{p.name}</span>
-                  <div className='fee-breakdown'>
-                    {fee > 0 && (
-                      <span className='fee-breakdown-item'>場代 {fee.toLocaleString()}円</span>
-                    )}
-                    {personal > 0 && (
-                      <span className='fee-breakdown-item'>個人分 {personal.toLocaleString()}円</span>
-                    )}
-                    <span className='fee-amount'>{total.toLocaleString()}円</span>
-                  </div>
-                </div>
-              );
-            })}
-            <div className='fee-total'>
-              <span>合計</span>
-              <span>{storePayTotal.toLocaleString()}円</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 送金指示 */}
-      <div className='transfers-card'>
-        <h3 className='transfers-title'>送金指示</h3>
-        {transfers.length === 0 ? (
-          <p className='transfers-empty'>送金なし（全員±0）</p>
-        ) : (
-          <div className='transfers-list'>
-            {transfers.map((t, i) => (
-              <div key={i} className='transfer-item'>
-                <span className='transfer-from'>{playerName(t.from)}</span>
-                <span className='transfer-arrow'>→</span>
-                <span className='transfer-to'>{playerName(t.to)}</span>
-                <span className='transfer-amount'>
-                  {t.amount.toLocaleString()}円
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
       <div className='settlement-actions'>

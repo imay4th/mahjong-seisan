@@ -180,7 +180,7 @@ export function GameScreen({
     <div className='screen game-screen'>
       {/* 累計収支カード */}
       <div className='cumulative-card'>
-        <h2 className='cumulative-title'>累計収支</h2>
+        <h2 className='cumulative-title'>ここまでの収支</h2>
         <div className='cumulative-grid'>
           {players.map((p) => {
             const amount = cumulativeResult ? (cumulativeResult[p.id] ?? 0) : 0;
@@ -259,7 +259,7 @@ export function GameScreen({
             {/* ドラフト行（常に1行） */}
             <tr className='score-table-row score-table-draft-row'>
               <td className='score-table-td score-table-label-col score-table-row-label'>
-                入力中
+                今局
               </td>
               {players.map((p) => {
                 const val = draft[p.id];

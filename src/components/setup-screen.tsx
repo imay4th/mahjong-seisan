@@ -46,16 +46,16 @@ export function SetupScreen({ onStart, onBack }: SetupScreenProps) {
     const errs: string[] = [];
     const trimmed = names.map((n) => n.trim());
     trimmed.forEach((n, i) => {
-      if (!n) errs.push(`プレイヤー${i + 1}の名前を入力してください。`);
+      if (!n) errs.push(`${i + 1}席の名前が空です`);
     });
     const unique = new Set(trimmed.filter(Boolean));
     if (unique.size < trimmed.filter(Boolean).length) {
-      errs.push('プレイヤー名が重複しています。');
+      errs.push('同じ名前が2人います');
     }
     if (ratePreset === 'custom') {
       const v = Number(customRate);
       if (!customRate || isNaN(v) || v <= 0) {
-        errs.push('カスタムレートに正の数を入力してください。');
+        errs.push('レートは1以上で');
       }
     }
     setErrors(errs);
@@ -90,7 +90,7 @@ export function SetupScreen({ onStart, onBack }: SetupScreenProps) {
         <button className='btn-back' onClick={onBack} aria-label='戻る'>
           ←
         </button>
-        <h2 className='screen-title'>ゲーム設定</h2>
+        <h2 className='screen-title'>卓の設定</h2>
       </div>
 
       <div className='setup-body'>

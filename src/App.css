@@ -28,9 +28,8 @@
   font-weight: 700;
   color: #1a3a2a;
   box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6),
-    2px 3px 0 rgba(0, 0, 0, 0.3);
+    0 2px 0 #c4bca8,
+    0 6px 14px rgba(0, 0, 0, 0.45);
   border: 1px solid rgba(0, 0, 0, 0.15);
   letter-spacing: 0;
 }
@@ -38,7 +37,8 @@
 .app-title {
   font-size: 36px;
   font-weight: 700;
-  color: var(--text-gold);
+  color: var(--text-primary);
+  font-family: var(--font-display);
   letter-spacing: 0.05em;
 }
 
@@ -77,8 +77,7 @@
 .setup-section-title {
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-gold);
-  text-transform: uppercase;
+  color: var(--text-secondary);
   letter-spacing: 0.08em;
 }
 
@@ -107,7 +106,6 @@
   font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
-  text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-bottom: 12px;
 }
@@ -155,7 +153,6 @@
   font-size: 14px;
   font-weight: 600;
   color: var(--text-secondary);
-  text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-bottom: 10px;
 }
@@ -185,7 +182,7 @@
 .hanchan-label {
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-gold);
+  color: var(--text-secondary);
 }
 
 .btn-delete {
@@ -366,7 +363,7 @@
   padding: 8px 4px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-gold);
+  color: var(--text-secondary);
   text-align: center;
   background: rgba(0, 0, 0, 0.4);
   border-bottom: 1px solid var(--border-card);
@@ -546,7 +543,6 @@
   font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
-  text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-bottom: 12px;
 }
@@ -620,8 +616,7 @@
 .fee-card-title {
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-secondary);
-  text-transform: uppercase;
+  color: var(--text-gold);
   letter-spacing: 0.08em;
   margin-bottom: 12px;
 }
@@ -691,7 +686,6 @@
   font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
-  text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-bottom: 12px;
 }
@@ -736,7 +730,7 @@
 
 .transfer-arrow {
   font-size: 20px;
-  color: var(--text-gold);
+  color: var(--text-secondary);
   flex-shrink: 0;
 }
 
@@ -749,6 +743,18 @@
   white-space: nowrap;
   min-width: 90px;
   text-align: right;
+}
+
+/* 送金ヒーロー化 */
+.transfers-card-hero {
+  background: var(--bg-card);
+  border: 2px solid var(--border-card);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.transfer-amount-hero {
+  font-size: 26px;
+  font-weight: 700;
 }
 
 .settlement-actions {

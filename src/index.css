@@ -36,8 +36,9 @@
   --btn-danger-text: #e05555;
 
   /* タイポグラフィ */
-  --font-sans: system-ui, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-  --font-mono: 'Courier New', Consolas, ui-monospace, monospace;
+  --font-display: 'Zen Old Mincho', serif;
+  --font-sans: 'Zen Kaku Gothic New', system-ui, sans-serif;
+  --font-mono: 'DM Mono', 'Roboto Mono', ui-monospace, monospace;
 
   /* 数値表示用 */
   font-variant-numeric: tabular-nums;
@@ -124,7 +125,8 @@ input {
 .screen-title {
   font-size: 18px;
   font-weight: 600;
-  color: var(--text-gold);
+  color: var(--text-primary);
+  font-family: var(--font-display);
 }
 
 /* ===== 戻るボタン ===== */
@@ -135,7 +137,7 @@ input {
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  color: var(--text-gold);
+  color: var(--text-secondary);
   font-size: 20px;
   background: var(--bg-segment);
   transition: background 0.2s;
