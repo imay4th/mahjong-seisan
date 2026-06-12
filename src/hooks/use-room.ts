@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { GameState, HanchanScores, RuleSettings, FeeSplitMode, Player } from '../types.ts';
+import type { GameState, HanchanScores, RuleSettings, FeeSplitMode, Player, PersonalExpenseItem } from '../types.ts';
 import { supabase, isSupabaseConfigured } from '../lib/supabase.ts';
 
 // -------------------------------------------------------
@@ -27,7 +27,20 @@ interface DbRoomState {
   settings: RuleSettings;
   total_fee: number;
   fee_mode: FeeSplitMode;
+  fee_payer_id: string | null;
+  personal_expenses: PersonalExpenseItem[] | null;
   updated_at: string;
+}
+
+/** ランタイム型ガード: PersonalExpenseItem の形状を検証する */
+function isPersonalExpenseItem(v: unknown): v is PersonalExpenseItem {
+  return (
+    typeof v === 'object' &&
+    v !== null &&
+    typeof (v as PersonalExpenseItem).id === 'string' &&
+    typeof (v as PersonalExpenseItem).memo === 'string' &&
+    typeof (v as PersonalExpenseItem).amounts === 'object'
+  );
 }
 
 interface DbPlayer {
@@ -111,19 +124,17 @@ function buildGameState(
     .sort((a, b) => a.hanchan_no - b.hanchan_no)
     .map((h) => h.scores);
 
-  const personalExpenses: Record<string, number> = {};
-  for (const p of players) {
-    personalExpenses[p.id] = p.personal_yen;
-  }
-
   return {
     players: sortedPlayers,
     settings: roomState.settings,
     totalFee: roomState.total_fee,
     feeMode: roomState.fee_mode,
     hanchans: sortedHanchans,
-    personalExpenses,
+    personalExpenseItems: Array.isArray(roomState.personal_expenses)
+      ? roomState.personal_expenses.filter(isPersonalExpenseItem)
+      : [],
     draft,
+    feePayerId: roomState.fee_payer_id ?? null,
   };
 }
 
@@ -146,8 +157,12 @@ export interface UseRoom {
   updateHanchan(index: number, scores: HanchanScores): void;
   removeHanchan(index: number): void;
   setTotalFee(fee: number): void;
-  setPersonalExpense(playerId: string, yen: number): void;
+  setFeePayerId(id: string | null): void;
+  /** 場代立替者の保存に失敗したときのエラーメッセージ（成功・再試行開始で null） */
+  feePayerSaveError: string | null;
+  setPersonalExpenseItems(items: PersonalExpenseItem[]): void;
   setDraft(draft: Record<string, number | null>): void;
+  updateSettings(settings: RuleSettings, feeMode: FeeSplitMode): void;
   leaveRoom(): void;
 }
 
@@ -156,11 +171,14 @@ export function useRoom(): UseRoom {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [roomInfo, setRoomInfo] = useState<{ roomId: string; inviteCode: string } | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
+  const [feePayerSaveError, setFeePayerSaveError] = useState<string | null>(null);
 
   // Realtime チャンネルの参照（クリーンアップ用）
   const channelRef = useRef<ReturnType<NonNullable<typeof supabase>['channel']> | null>(null);
-  // debounce タイマー
+  // debounce タイマー（room_state 汎用）
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // personal_expenses 専用 debounce タイマー（debounceRef と共用すると相互 clearTimeout で書き込み消失するため分離）
+  const personalExpensesDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // refetch 用に roomId を ref でも持つ
   const roomIdRef = useRef<string | null>(null);
 
@@ -335,6 +353,8 @@ export function useRoom(): UseRoom {
         settings,
         total_fee: totalFee,
         fee_mode: feeMode,
+        fee_payer_id: null,
+        personal_expenses: [],
         updated_at: new Date().toISOString(),
       };
       const dbPlayers: DbPlayer[] = players.map((p) => ({
@@ -541,26 +561,105 @@ export function useRoom(): UseRoom {
   );
 
   // -------------------------------------------------------
-  // setPersonalExpense
+  // setFeePayerId
   // -------------------------------------------------------
-  const setPersonalExpense = useCallback(
-    (playerId: string, yen: number) => {
+  const setFeePayerId = useCallback(
+    (id: string | null) => {
       if (!supabase || !roomIdRef.current) return;
+      const roomId = roomIdRef.current;
 
+      // 楽観的更新
+      setFeePayerSaveError(null);
       setGameState((prev) => {
         if (!prev) return prev;
-        const personalExpenses = { ...prev.personalExpenses, [playerId]: yen };
-        return { ...prev, personalExpenses };
+        return { ...prev, feePayerId: id };
       });
 
       (async () => {
-        await supabase
-          .from('players')
-          .update({ personal_yen: yen })
-          .eq('id', playerId);
+        const { error } = await supabase
+          .from('room_state')
+          .update({ fee_payer_id: id, updated_at: new Date().toISOString() })
+          .eq('room_id', roomId);
+
+        if (error) {
+          console.error('場代立替者の保存に失敗:', error.message);
+          setFeePayerSaveError(
+            '場代を払う人を保存できませんでした。サーバー側の更新（fee_payer_id 列の追加）が済んでいるか確認してください。',
+          );
+          // ロールバック: DB 最新値で上書き
+          const gs = await refetchAll(roomId);
+          if (gs) setGameState(gs);
+        }
       })();
     },
-    [],
+    [refetchAll],
+  );
+
+  // -------------------------------------------------------
+  // updateSettings
+  // -------------------------------------------------------
+  const updateSettings = useCallback(
+    (settings: RuleSettings, feeMode: FeeSplitMode) => {
+      if (!supabase || !roomIdRef.current) return;
+      const roomId = roomIdRef.current;
+
+      // 楽観的更新
+      setGameState((prev) => {
+        if (!prev) return prev;
+        return { ...prev, settings, feeMode };
+      });
+
+      (async () => {
+        const { error } = await supabase
+          .from('room_state')
+          .update({ settings, fee_mode: feeMode, updated_at: new Date().toISOString() })
+          .eq('room_id', roomId);
+
+        if (error) {
+          // ロールバック: DB 最新値で上書き
+          const gs = await refetchAll(roomId);
+          if (gs) setGameState(gs);
+        }
+      })();
+    },
+    [refetchAll],
+  );
+
+  // -------------------------------------------------------
+  // setPersonalExpenseItems
+  // -------------------------------------------------------
+  const setPersonalExpenseItems = useCallback(
+    (items: PersonalExpenseItem[]) => {
+      if (!supabase || !roomIdRef.current) return;
+      const roomId = roomIdRef.current;
+
+      // 楽観的更新: 即時反映
+      setGameState((prev) => {
+        if (!prev) return prev;
+        return { ...prev, personalExpenseItems: items };
+      });
+
+      // 400ms debounce で DB UPDATE（専用 ref を使用）
+      if (personalExpensesDebounceRef.current) clearTimeout(personalExpensesDebounceRef.current);
+      personalExpensesDebounceRef.current = setTimeout(async () => {
+        if (!supabase) return;
+        const { error } = await supabase
+          .from('room_state')
+          .update({
+            personal_expenses: items,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('room_id', roomId);
+
+        if (error) {
+          console.error('個人分費用の保存に失敗:', error.message);
+          // ロールバック: DB 最新値で上書き
+          const gs = await refetchAll(roomId);
+          if (gs) setGameState(gs);
+        }
+      }, 400);
+    },
+    [refetchAll],
   );
 
   // -------------------------------------------------------
@@ -606,8 +705,11 @@ export function useRoom(): UseRoom {
     updateHanchan,
     removeHanchan,
     setTotalFee,
-    setPersonalExpense,
+    setFeePayerId,
+    feePayerSaveError,
+    setPersonalExpenseItems,
     setDraft,
+    updateSettings,
     leaveRoom,
   };
 }

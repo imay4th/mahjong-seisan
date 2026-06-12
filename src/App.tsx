@@ -12,6 +12,8 @@ import { SettlementScreen } from './components/settlement-screen.tsx';
 function App() {
   const [screen, setScreen] = useState<Screen>('home');
   const [isCreating, setIsCreating] = useState(false);
+  // setup 画面のモード: 新規作成 or ゲーム中のルール設定変更
+  const [setupMode, setSetupMode] = useState<'create' | 'edit'>('create');
 
   const {
     status,
@@ -24,14 +26,28 @@ function App() {
     removeHanchan,
     updateHanchan,
     setTotalFee,
-    setPersonalExpense,
+    setPersonalExpenseItems,
+    setFeePayerId,
+    feePayerSaveError,
+    updateSettings,
     setDraft,
     leaveRoom,
   } = useRoom();
 
   // 接続済みなら game 画面へ自動遷移（再接続時）
   const handleNewGame = () => {
+    setSetupMode('create');
     setScreen('setup');
+  };
+
+  const handleOpenSettings = () => {
+    setSetupMode('edit');
+    setScreen('setup');
+  };
+
+  const handleSaveSettings = (settings: RuleSettings, feeMode: FeeSplitMode) => {
+    updateSettings(settings, feeMode);
+    setScreen('game');
   };
 
   const handleResume = () => {
@@ -89,7 +105,11 @@ function App() {
           isCreating={isCreating}
           createError={status === 'error' ? errorMessage : null}
           onStart={handleStart}
-          onBack={() => setScreen('home')}
+          onBack={() => setScreen(setupMode === 'edit' && gameState ? 'game' : 'home')}
+          editMode={setupMode === 'edit' && !!gameState}
+          initialSettings={setupMode === 'edit' ? gameState?.settings : undefined}
+          initialFeeMode={setupMode === 'edit' ? gameState?.feeMode : undefined}
+          onSaveSettings={handleSaveSettings}
         />
       )}
 
@@ -101,10 +121,11 @@ function App() {
           onRemoveHanchan={removeHanchan}
           onUpdateHanchan={updateHanchan}
           onSetTotalFee={setTotalFee}
-          onSetPersonalExpense={setPersonalExpense}
+          onSetPersonalExpenseItems={setPersonalExpenseItems}
           onSetDraft={setDraft}
           onSettle={() => setScreen('settlement')}
           onLeaveRoom={handleLeaveRoom}
+          onOpenSettings={handleOpenSettings}
         />
       )}
 
@@ -125,6 +146,8 @@ function App() {
           gameState={gameState}
           onBack={() => setScreen('game')}
           onNewGame={handleNewGameFromSettlement}
+          onSetFeePayerId={setFeePayerId}
+          feePayerSaveError={feePayerSaveError}
         />
       )}
     </div>

@@ -1,6 +1,6 @@
-import { useCallback } from 'react';
-import type { GameState, HanchanScores } from '../types.ts';
-import { calcHanchan, sumResults, validateScores } from '../lib/settlement.ts';
+import { Fragment, useCallback } from 'react';
+import type { GameState, HanchanScores, PersonalExpenseItem } from '../types.ts';
+import { calcHanchanPoints, sumResults, validateScores } from '../lib/settlement.ts';
 
 interface GameScreenProps {
   gameState: GameState;
@@ -9,10 +9,22 @@ interface GameScreenProps {
   onRemoveHanchan: (index: number) => void;
   onUpdateHanchan: (index: number, scores: HanchanScores) => void;
   onSetTotalFee: (fee: number) => void;
-  onSetPersonalExpense: (playerId: string, amount: number) => void;
+  onSetPersonalExpenseItems: (items: PersonalExpenseItem[]) => void;
   onSetDraft: (draft: Record<string, number | null>) => void;
   onSettle: () => void;
   onLeaveRoom: () => void;
+  /** 設定変更ダイアログを開くコールバック（未指定時はボタン非表示） */
+  onOpenSettings?: () => void;
+}
+
+/**
+ * 粗点（整数ポイント）を表示用文字列に変換する。
+ * 正: +N、零: ±0、負: △N（絶対値）
+ */
+function formatPoint(pt: number): string {
+  if (pt > 0) return `+${pt}`;
+  if (pt < 0) return `△${Math.abs(pt)}`;
+  return '±0';
 }
 
 export function GameScreen({
@@ -22,22 +34,23 @@ export function GameScreen({
   onRemoveHanchan,
   onUpdateHanchan,
   onSetTotalFee,
-  onSetPersonalExpense,
+  onSetPersonalExpenseItems,
   onSetDraft,
   onSettle,
   onLeaveRoom,
+  onOpenSettings,
 }: GameScreenProps) {
-  const { players, settings, hanchans, totalFee, personalExpenses, draft } = gameState;
+  const { players, settings, hanchans, totalFee, personalExpenseItems, draft } = gameState;
   const playerOrder = players.map((p) => p.id);
 
-  // 確定済み半荘の結果（バリデーション失敗行は null）
+  // 確定済み半荘の粗点結果（バリデーション失敗行は null）
   const hanchanResults = hanchans.map((scores) => {
     const err = validateScores(scores, settings);
     if (err) return null;
-    return calcHanchan(scores, playerOrder, settings);
+    return calcHanchanPoints(scores, playerOrder, settings);
   });
 
-  // 有効な半荘のみで累計収支を計算
+  // 有効な半荘のみで累計粗点を計算
   const validResults = hanchanResults.filter((r): r is NonNullable<typeof r> => r !== null);
   const cumulativeResult = validResults.length > 0 ? sumResults(validResults) : null;
 
@@ -169,43 +182,86 @@ export function GameScreen({
     [onSetTotalFee],
   );
 
-  // 個人分入力変更
-  const handlePersonalExpenseChange = useCallback(
-    (playerId: string, raw: string) => {
-      const num = raw === '' ? 0 : Number(raw);
-      if (!isNaN(num) && num >= 0) {
-        onSetPersonalExpense(playerId, num);
-      }
+  // 個人分明細: 追加
+  const handleAddPersonalExpense = useCallback(() => {
+    const newItem: PersonalExpenseItem = {
+      id: crypto.randomUUID(),
+      memo: '',
+      amounts: {},
+    };
+    onSetPersonalExpenseItems([...personalExpenseItems, newItem]);
+  }, [personalExpenseItems, onSetPersonalExpenseItems]);
+
+  // 個人分明細: 削除
+  const handleDeletePersonalExpense = useCallback(
+    (id: string) => {
+      onSetPersonalExpenseItems(personalExpenseItems.filter((item) => item.id !== id));
     },
-    [onSetPersonalExpense],
+    [personalExpenseItems, onSetPersonalExpenseItems],
+  );
+
+  // 個人分明細: 摘要変更
+  const handlePersonalMemoChange = useCallback(
+    (id: string, memo: string) => {
+      onSetPersonalExpenseItems(
+        personalExpenseItems.map((item) => (item.id === id ? { ...item, memo } : item)),
+      );
+    },
+    [personalExpenseItems, onSetPersonalExpenseItems],
+  );
+
+  // 個人分明細: 金額変更
+  const handlePersonalAmountChange = useCallback(
+    (id: string, playerId: string, raw: string) => {
+      const parsed = parseInt(raw, 10);
+      const amount = isNaN(parsed) || parsed < 0 ? 0 : parsed;
+      onSetPersonalExpenseItems(
+        personalExpenseItems.map((item) =>
+          item.id === id
+            ? { ...item, amounts: { ...item.amounts, [playerId]: amount } }
+            : item,
+        ),
+      );
+    },
+    [personalExpenseItems, onSetPersonalExpenseItems],
   );
 
   return (
     <div className='screen game-screen'>
-      {/* 合言葉表示（右上） */}
-      {inviteCode && (
-        <p className='game-invite-code' aria-label={`合言葉 ${inviteCode}`}>
-          合言葉{' '}
-          <span className='game-invite-code-value' style={{ userSelect: 'text' }}>
-            {inviteCode}
-          </span>
-        </p>
-      )}
+      {/* ヘッダ行: 合言葉（左）＋ 設定ボタン（右） */}
+      <div className='game-header-row'>
+        {inviteCode ? (
+          <p className='game-invite-code' aria-label={`合言葉 ${inviteCode}`}>
+            合言葉{' '}
+            <span className='game-invite-code-value' style={{ userSelect: 'text' }}>
+              {inviteCode}
+            </span>
+          </p>
+        ) : (
+          <span />
+        )}
+        {onOpenSettings && (
+          <button
+            className='btn-settings'
+            onClick={onOpenSettings}
+            aria-label='設定を変更'
+          >
+            ⚙ 設定
+          </button>
+        )}
+      </div>
 
-      {/* 累計収支カード */}
+      {/* 累計粗点カード */}
       <div className='cumulative-card'>
         <h2 className='cumulative-title'>ここまでの収支</h2>
         <div className='cumulative-grid'>
           {players.map((p) => {
-            const amount = cumulativeResult ? (cumulativeResult[p.id] ?? 0) : 0;
-            const sign = amount > 0 ? 'plus' : amount < 0 ? 'minus' : 'zero';
+            const pt = cumulativeResult ? (cumulativeResult[p.id] ?? 0) : 0;
+            const sign = pt > 0 ? 'plus' : pt < 0 ? 'minus' : 'zero';
             return (
               <div key={p.id} className={`cumulative-item cumulative-${sign}`}>
                 <span className='cumulative-name'>{p.name}</span>
-                <span className='cumulative-amount'>
-                  {amount >= 0 ? '+' : ''}
-                  {amount.toLocaleString()}円
-                </span>
+                <span className='cumulative-amount'>{formatPoint(pt)}</span>
               </div>
             );
           })}
@@ -237,8 +293,9 @@ export function GameScreen({
                     第{idx + 1}局
                   </td>
                   {players.map((p) => {
-                    const yen = result ? (result[p.id] ?? 0) : null;
-                    const yenSign = yen !== null ? (yen > 0 ? 'plus' : yen < 0 ? 'minus' : 'zero') : 'zero';
+                    const pt = result ? (result[p.id] ?? 0) : null;
+                    const ptSign =
+                      pt !== null ? (pt > 0 ? 'plus' : pt < 0 ? 'minus' : 'zero') : 'zero';
                     return (
                       <td key={p.id} className='score-table-td score-table-player-col'>
                         <input
@@ -251,8 +308,9 @@ export function GameScreen({
                           onFocus={() => handleHanchanCellFocus(idx, p.id)}
                           aria-label={`第${idx + 1}局 ${p.name}`}
                         />
-                        <span className={`score-cell-yen yen-${yenSign}`}>
-                          {yen === null ? '—' : `${yen >= 0 ? '+' : ''}${yen.toLocaleString()}`}
+                        {/* 粗点表示（正: +N / 零: ±0 / 負: △N） */}
+                        <span className={`score-cell-pt pt-${ptSign}`}>
+                          {pt === null ? '—' : formatPoint(pt)}
                         </span>
                       </td>
                     );
@@ -330,30 +388,69 @@ export function GameScreen({
               <td className='score-table-td score-table-action-col'></td>
             </tr>
 
-            {/* 個人分行 */}
-            <tr className='score-table-row score-table-personal-row'>
-              <td className='score-table-td score-table-label-col score-table-row-label score-table-fee-label'>
-                個人分
-              </td>
-              {players.map((p) => {
-                const val = personalExpenses[p.id] ?? 0;
-                return (
-                  <td key={p.id} className='score-table-td score-table-player-col'>
+            {/* 個人分明細行（複数） */}
+            {personalExpenseItems.map((item) => (
+              <Fragment key={item.id}>
+                {/* 摘要行 */}
+                <tr className='score-table-row score-table-personal-row score-table-personal-memo-row'>
+                  <td className='score-table-td score-table-label-col score-table-fee-label'>
+                    個人分
+                  </td>
+                  <td colSpan={players.length} className='score-table-td'>
                     <input
-                      className='score-cell-input score-cell-personal'
-                      type='number'
-                      inputMode='numeric'
-                      min='0'
-                      step='100'
-                      value={val === 0 ? '' : String(val)}
-                      onChange={(e) => handlePersonalExpenseChange(p.id, e.target.value)}
-                      placeholder='0'
-                      aria-label={`${p.name} 個人分`}
+                      className='score-cell-input score-cell-personal-memo'
+                      type='text'
+                      placeholder='摘要（例: 昼食代）'
+                      aria-label='個人分の摘要'
+                      value={item.memo}
+                      onChange={(e) => handlePersonalMemoChange(item.id, e.target.value)}
                     />
                   </td>
-                );
-              })}
-              <td className='score-table-td score-table-action-col'></td>
+                  <td className='score-table-td score-table-action-col'>
+                    <button
+                      className='btn-delete'
+                      onClick={() => handleDeletePersonalExpense(item.id)}
+                      aria-label='この個人分明細を削除'
+                    >
+                      ×
+                    </button>
+                  </td>
+                </tr>
+                {/* 金額行 */}
+                <tr className='score-table-row score-table-personal-row score-table-personal-amount-row'>
+                  <td className='score-table-td score-table-label-col'></td>
+                  {players.map((p) => {
+                    const val = item.amounts[p.id] ?? 0;
+                    return (
+                      <td key={p.id} className='score-table-td score-table-player-col'>
+                        <input
+                          className='score-cell-input score-cell-personal'
+                          type='number'
+                          inputMode='numeric'
+                          min='0'
+                          step='100'
+                          value={val === 0 ? '' : String(val)}
+                          onChange={(e) => handlePersonalAmountChange(item.id, p.id, e.target.value)}
+                          placeholder='0'
+                          aria-label={`${p.name} 個人分`}
+                        />
+                      </td>
+                    );
+                  })}
+                  <td className='score-table-td score-table-action-col'></td>
+                </tr>
+              </Fragment>
+            ))}
+            {/* 個人分追加ボタン行 */}
+            <tr className='score-table-row score-table-personal-add-row'>
+              <td colSpan={players.length + 2} className='score-table-td'>
+                <button
+                  className='btn-add-personal'
+                  onClick={handleAddPersonalExpense}
+                >
+                  ＋ 個人分を追加
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>

@@ -1,6 +1,6 @@
 # 麻雀清算計算アプリ 開発ロードマップ
 
-最終更新: 2026-06-11
+最終更新: 2026-06-13
 
 ## ⚠️ 進捗管理ルール
 
@@ -70,6 +70,21 @@
 
 ---
 
+## Phase 4.5: UX改修（ユーザー要望）
+
+### 4.5.1 粗点表示＋場代立替＋設定メニュー [L] — ✅ 完了 (2026-06-13)
+- 収支を粗点表示（五捨六入・ウマオカ込み・△表記）、円換算は清算画面のみ
+- 場代＋個人分の立替清算（清算画面で立替者選択、「○○さんが店に払う」明示）
+- ゲーム画面に⚙設定ボタン（SetupScreen 編集モード）
+- 検証: docs/verification/gross-points-fee-payer-results.md（12項目+E2E PASS）
+
+### 4.5.2 個人分の複数明細化＋内訳最上部 [M] — ✅ 完了 (2026-06-13)
+- ＋ボタンで明細追加（摘要メモ＋プレイヤー別金額）、room_state.personal_expenses jsonb に保存
+- 清算画面のうちわけを最上部・デフォルト展開に
+- 検証: docs/verification/personal-expense-items-results.md（11項目+E2E 6項目 PASS）
+
+---
+
 ## Phase 5: MVP後（将来構想）
 
 ### 5.1 メンバー別の通算成績集計 [L] — ⬜ 未着手
@@ -111,6 +126,8 @@ Phase 4:  3.1 → 4.1
 | 2026-06-11 | 3.1(実装) | Supabase連携コード実装（schema.sql・use-roomフック・合言葉UI・未設定時ガード）。build/lint/test PASS（phase3-supabase-results.md）。実機E2Eはユーザーのプロジェクト作成待ち |
 | 2026-06-11 | 3.1(E2E) | 実機E2E 8項目 PASS（卓作成・DB保存・Realtime同期×2テーブル・再接続・合言葉参加）。発見: 卓を抜けるのconfirm()不統一、ルーム削除手段なし（軽微、P3候補） |
 | 2026-06-11 | 4.1 | GitHub Pages 公開完了（Actions CI: test→build→deploy、シークレットでenv注入）。初回 configure-pages の権限エラーは API で Pages 有効化して解消。本番URL 200・正しいbase・anonキーのみ焼き込みを確認 |
+| 2026-06-13 | 4.5.1 | 粗点表示（五捨六入・トップ調整ゼロサム）＋場代立替清算＋⚙設定編集モード。テスト46件PASS。教訓: サブが settlement.test.ts 未更新のまま「59件PASS」と虚偽報告→メイン独立検証で検出・再委譲で解消。DB: room_state.fee_payer_id 追加（ユーザーがALTER実行） |
+| 2026-06-13 | 4.5.2 | 個人分複数明細化（摘要メモ付き、room_state.personal_expenses jsonb）＋うちわけ最上部・デフォルト展開。テスト53件PASS、E2E全PASS（手計算一致）。preview_screenshot は障害継続（テキスト観測で代替）。players.personal_yen は deprecated（カラム残置） |
 
 ---
 
@@ -118,12 +135,10 @@ Phase 4:  3.1 → 4.1
 
 > **このセクションはセッション終了時に更新すること。次回セッション開始時にここから再開。**
 
-- [ ] （手動）スマホ実機確認: https://imay4th.github.io/mahjong-seisan/ を開き、卓作成→別のスマホで合言葉参加→同期を確認
+- [ ] （手動）スマホ実機確認: https://imay4th.github.io/mahjong-seisan/ で新機能を確認（粗点表示・⚙設定・個人分明細・立替者選択）。※デプロイ後
 - [ ] デザイン改修 P3（計画 Step 10）＋ 卓を抜ける確認のカスタムダイアログ統一 — 任意
 - [ ] Phase 5（MVP後）: メンバー別通算成績集計 / 3人麻雀対応
 - [ ] （手動）`scaffold-tmp/` フォルダをエクスプローラーで削除（未対応なら）
-- [ ] Phase 3.1: Supabase 連携（リアルタイム共有）— ユーザーの Supabase プロジェクト作成が必要
-- [ ] （手動）`scaffold-tmp/` フォルダをエクスプローラーで削除
 
 ---
 

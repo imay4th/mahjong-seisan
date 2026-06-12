@@ -11,6 +11,14 @@ interface SetupScreenProps {
     feeMode: FeeSplitMode,
   ) => void;
   onBack: () => void;
+  /** 編集モード（trueのときプレイヤー名入力を非表示にし、設定のみ変更できる） */
+  editMode?: boolean;
+  /** 編集モード時の初期設定値 */
+  initialSettings?: RuleSettings;
+  /** 編集モード時の初期場代分担方式 */
+  initialFeeMode?: FeeSplitMode;
+  /** 編集モード時の送信コールバック（設定・分担方式のみ受け取る） */
+  onSaveSettings?: (settings: RuleSettings, feeMode: FeeSplitMode) => void;
 }
 
 type RatePreset = '50' | '100' | 'custom';
@@ -29,13 +37,65 @@ const FEE_MODE_LABELS: Record<FeeSplitMode, string> = {
   loser: '最下位負担',
 };
 
-export function SetupScreen({ isCreating = false, createError = null, onStart, onBack }: SetupScreenProps) {
+/**
+ * レート値（円/千点）からプリセットを逆引きする。
+ * 50 → '50'、100 → '100'、それ以外 → 'custom'
+ */
+function detectRatePreset(ratePer1000: number): RatePreset {
+  if (ratePer1000 === 50) return '50';
+  if (ratePer1000 === 100) return '100';
+  return 'custom';
+}
+
+/**
+ * ウマ配列からプリセットを逆引きする。
+ * 一致するプリセットがなければ最初のプリセット '5-10' を返す（フォールバック）。
+ */
+function detectUmaPreset(uma: [number, number, number, number]): UmaPreset {
+  for (const [key, val] of Object.entries(UMA_MAP) as [UmaPreset, [number, number, number, number]][]) {
+    if (
+      uma[0] === val[0] &&
+      uma[1] === val[1] &&
+      uma[2] === val[2] &&
+      uma[3] === val[3]
+    ) {
+      return key;
+    }
+  }
+  // 該当なし → custom扱いだがプリセット型にないため最近似の '10-20' を返す
+  return '10-20';
+}
+
+export function SetupScreen({
+  isCreating = false,
+  createError = null,
+  onStart,
+  onBack,
+  editMode = false,
+  initialSettings,
+  initialFeeMode,
+  onSaveSettings,
+}: SetupScreenProps) {
   const [names, setNames] = useState(['プレイヤー1', 'プレイヤー2', 'プレイヤー3', 'プレイヤー4']);
-  const [ratePreset, setRatePreset] = useState<RatePreset>('50');
-  const [customRate, setCustomRate] = useState('');
-  const [umaPreset, setUmaPreset] = useState<UmaPreset>('10-20');
-  const [oka, setOka] = useState(true);
-  const [feeMode, setFeeMode] = useState<FeeSplitMode>('equal');
+
+  // 編集モード時は initialSettings から初期値を復元する
+  const initRatePreset = initialSettings
+    ? detectRatePreset(initialSettings.ratePer1000)
+    : '50';
+  const initCustomRate = initialSettings && initRatePreset === 'custom'
+    ? String(initialSettings.ratePer1000)
+    : '';
+  const initUmaPreset = initialSettings
+    ? detectUmaPreset(initialSettings.uma)
+    : '10-20';
+  const initOka = initialSettings ? initialSettings.oka : true;
+  const initFeeMode: FeeSplitMode = initialFeeMode ?? 'equal';
+
+  const [ratePreset, setRatePreset] = useState<RatePreset>(initRatePreset);
+  const [customRate, setCustomRate] = useState(initCustomRate);
+  const [umaPreset, setUmaPreset] = useState<UmaPreset>(initUmaPreset);
+  const [oka, setOka] = useState(initOka);
+  const [feeMode, setFeeMode] = useState<FeeSplitMode>(initFeeMode);
   const [errors, setErrors] = useState<string[]>([]);
 
   const handleNameChange = (index: number, value: string) => {
@@ -46,14 +106,19 @@ export function SetupScreen({ isCreating = false, createError = null, onStart, o
 
   const validate = (): boolean => {
     const errs: string[] = [];
-    const trimmed = names.map((n) => n.trim());
-    trimmed.forEach((n, i) => {
-      if (!n) errs.push(`${i + 1}席の名前が空です`);
-    });
-    const unique = new Set(trimmed.filter(Boolean));
-    if (unique.size < trimmed.filter(Boolean).length) {
-      errs.push('同じ名前が2人います');
+
+    // 新規作成モードのみ名前バリデーション
+    if (!editMode) {
+      const trimmed = names.map((n) => n.trim());
+      trimmed.forEach((n, i) => {
+        if (!n) errs.push(`${i + 1}席の名前が空です`);
+      });
+      const unique = new Set(trimmed.filter(Boolean));
+      if (unique.size < trimmed.filter(Boolean).length) {
+        errs.push('同じ名前が2人います');
+      }
     }
+
     if (ratePreset === 'custom') {
       const v = Number(customRate);
       if (!customRate || isNaN(v) || v <= 0) {
@@ -64,23 +129,30 @@ export function SetupScreen({ isCreating = false, createError = null, onStart, o
     return errs.length === 0;
   };
 
-  const handleSubmit = () => {
-    if (!validate()) return;
-
-    const trimmedNames = names.map((name) => name.trim() || `プレイヤー${names.indexOf(name) + 1}`);
-
+  const buildSettings = (): RuleSettings => {
     const ratePer1000 =
       ratePreset === '50' ? 50 : ratePreset === '100' ? 100 : Number(customRate);
-
-    const settings: RuleSettings = {
+    return {
       ratePer1000,
       uma: UMA_MAP[umaPreset],
       oka,
       startingPoints: 25000,
       returnPoints: 30000,
     };
+  };
 
-    onStart(trimmedNames, settings, 0, feeMode);
+  const handleSubmit = () => {
+    if (!validate()) return;
+
+    if (editMode) {
+      // 編集モード: 設定のみ保存
+      onSaveSettings?.(buildSettings(), feeMode);
+      return;
+    }
+
+    // 新規作成モード
+    const trimmedNames = names.map((name) => name.trim() || `プレイヤー${names.indexOf(name) + 1}`);
+    onStart(trimmedNames, buildSettings(), 0, feeMode);
   };
 
   return (
@@ -97,30 +169,31 @@ export function SetupScreen({ isCreating = false, createError = null, onStart, o
             />
           </svg>
         </button>
-        <h2 className='screen-title'>卓の設定</h2>
+        <h2 className='screen-title'>{editMode ? 'ルール設定を変更' : '卓の設定'}</h2>
       </div>
 
       <div className='setup-body'>
-        {/* ── 必須項目グループ（強罫線見出し） ── */}
-        {/* プレイヤー名 */}
-        <section className='setup-section setup-section-primary'>
-          <h3 className='setup-section-title setup-section-title-strong'>プレイヤー名</h3>
-          <div className='player-inputs'>
-            {names.map((name, i) => (
-              <div key={i} className='input-group'>
-                <label className='input-label'>{i + 1}席</label>
-                <input
-                  className='text-input'
-                  type='text'
-                  value={name}
-                  onChange={(e) => handleNameChange(i, e.target.value)}
-                  maxLength={10}
-                  placeholder={`プレイヤー${i + 1}`}
-                />
-              </div>
-            ))}
-          </div>
-        </section>
+        {/* プレイヤー名: 新規作成モードのみ表示 */}
+        {!editMode && (
+          <section className='setup-section setup-section-primary'>
+            <h3 className='setup-section-title setup-section-title-strong'>プレイヤー名</h3>
+            <div className='player-inputs'>
+              {names.map((name, i) => (
+                <div key={i} className='input-group'>
+                  <label className='input-label'>{i + 1}席</label>
+                  <input
+                    className='text-input'
+                    type='text'
+                    value={name}
+                    onChange={(e) => handleNameChange(i, e.target.value)}
+                    maxLength={10}
+                    placeholder={`プレイヤー${i + 1}`}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* レート */}
         <section className='setup-section setup-section-primary'>
@@ -231,7 +304,11 @@ export function SetupScreen({ isCreating = false, createError = null, onStart, o
           onClick={handleSubmit}
           disabled={isCreating}
         >
-          {isCreating ? '卓を準備中…' : 'この設定ではじめる'}
+          {isCreating
+            ? '卓を準備中…'
+            : editMode
+              ? 'この設定で続ける'
+              : 'この設定ではじめる'}
         </button>
       </div>
     </div>

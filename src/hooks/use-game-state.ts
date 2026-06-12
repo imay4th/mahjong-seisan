@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { GameState, HanchanScores, Player, RuleSettings, FeeSplitMode } from '../types.ts';
+import type { GameState, HanchanScores, Player, RuleSettings, FeeSplitMode, PersonalExpenseItem } from '../types.ts';
 
 const STORAGE_KEY = 'mahjong-settlement-v1';
 
@@ -8,7 +8,7 @@ function loadState(): GameState | null {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<GameState>;
-    // 後方互換: 旧形式に personalExpenses / draft がない場合はデフォルト補完
+    // 後方互換: 旧形式に personalExpenseItems / draft がない場合はデフォルト補完
     return {
       players: parsed.players ?? [],
       settings: parsed.settings ?? {
@@ -21,8 +21,9 @@ function loadState(): GameState | null {
       totalFee: parsed.totalFee ?? 0,
       feeMode: parsed.feeMode ?? 'equal',
       hanchans: parsed.hanchans ?? [],
-      personalExpenses: parsed.personalExpenses ?? {},
+      personalExpenseItems: Array.isArray(parsed.personalExpenseItems) ? parsed.personalExpenseItems : [],
       draft: parsed.draft ?? {},
+      feePayerId: parsed.feePayerId ?? null,
     };
   } catch {
     return null;
@@ -53,8 +54,10 @@ interface UseGameState {
   removeHanchan: (index: number) => void;
   updateHanchan: (index: number, scores: HanchanScores) => void;
   setTotalFee: (fee: number) => void;
-  setPersonalExpense: (playerId: string, amount: number) => void;
+  setFeePayerId: (id: string | null) => void;
+  setPersonalExpenseItems: (items: PersonalExpenseItem[]) => void;
   setDraft: (draft: Record<string, number | null>) => void;
+  updateSettings: (settings: RuleSettings, feeMode: FeeSplitMode) => void;
   clearGame: () => void;
 }
 
@@ -74,8 +77,9 @@ export function useGameState(): UseGameState {
         totalFee,
         feeMode,
         hanchans: [],
-        personalExpenses: {},
+        personalExpenseItems: [],
         draft: {},
+        feePayerId: null,
       };
       saveState(next);
       setGameState(next);
@@ -121,11 +125,28 @@ export function useGameState(): UseGameState {
     });
   }, []);
 
-  const setPersonalExpense = useCallback((playerId: string, amount: number) => {
+  const setFeePayerId = useCallback((id: string | null) => {
     setGameState((prev) => {
       if (!prev) return prev;
-      const personalExpenses = { ...prev.personalExpenses, [playerId]: amount };
-      const next: GameState = { ...prev, personalExpenses };
+      const next: GameState = { ...prev, feePayerId: id };
+      saveState(next);
+      return next;
+    });
+  }, []);
+
+  const updateSettings = useCallback((settings: RuleSettings, feeMode: FeeSplitMode) => {
+    setGameState((prev) => {
+      if (!prev) return prev;
+      const next: GameState = { ...prev, settings, feeMode };
+      saveState(next);
+      return next;
+    });
+  }, []);
+
+  const setPersonalExpenseItems = useCallback((items: PersonalExpenseItem[]) => {
+    setGameState((prev) => {
+      if (!prev) return prev;
+      const next: GameState = { ...prev, personalExpenseItems: items };
       saveState(next);
       return next;
     });
@@ -152,8 +173,10 @@ export function useGameState(): UseGameState {
     removeHanchan,
     updateHanchan,
     setTotalFee,
-    setPersonalExpense,
+    setFeePayerId,
+    setPersonalExpenseItems,
     setDraft,
+    updateSettings,
     clearGame,
   };
 }

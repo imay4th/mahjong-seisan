@@ -34,6 +34,18 @@ export interface Transfer {
   amount: number; // 円（正の整数）
 }
 
+/**
+ * 個人分費用の明細1件。
+ * id: crypto.randomUUID() で生成する一意識別子
+ * memo: 摘要（例: 昼食代）
+ * amounts: playerId → 円（そのプレイヤーの負担額）
+ */
+export interface PersonalExpenseItem {
+  id: string;
+  memo: string;
+  amounts: Record<string, number>;
+}
+
 // ---- 状態管理型 ----
 
 /** 画面識別子 */
@@ -46,8 +58,10 @@ export interface GameState {
   totalFee: number;
   feeMode: FeeSplitMode;
   hanchans: HanchanScores[];
-  /** 個人分費用: playerId → 円 */
-  personalExpenses: Record<string, number>;
+  /** 個人分費用明細リスト（複数明細対応） */
+  personalExpenseItems: PersonalExpenseItem[];
   /** 編集中のドラフト行: playerId → 持ち点（null = 未入力） */
   draft: Record<string, number | null>;
+  /** 場代立替者のプレイヤーID（未選択なら null） */
+  feePayerId: string | null;
 }

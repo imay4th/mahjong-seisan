@@ -1,4 +1,4 @@
-import type { HanchanResult, HanchanScores, RuleSettings, FeeSplitMode, Transfer } from '../types.ts';
+import type { HanchanResult, HanchanScores, RuleSettings, FeeSplitMode, Transfer, PersonalExpenseItem } from '../types.ts';
 
 /**
  * 持ち点の合計と100点単位を検証する。
@@ -28,7 +28,74 @@ export function validateScores(
 }
 
 /**
+ * 五捨六入（千点単位）。
+ * 百の位が5以下なら絶対値切り捨て、6以上なら絶対値切り上げ。
+ * 例: 25500→25000, 25600→26000, -1500→-1000, -1600→-2000
+ */
+function roundGoshaRokunyu(x: number): number {
+  const sign = x < 0 ? -1 : 1;
+  const abs = Math.abs(x);
+  const rem = abs % 1000;
+  return sign * (rem <= 500 ? abs - rem : abs - rem + 1000);
+}
+
+/**
+ * 1半荘の清算結果（整数ポイント）を計算する。
+ * 各持ち点を五捨六入で千点単位に丸め、ウマ・オカ込みの整数ポイントを返す。
+ *
+ * @param scores - 持ち点マップ（playerId → 点数）
+ * @param playerOrder - 席順（同点時の順位決定に使用）
+ * @param settings - ルール設定
+ * @returns 各プレイヤーの整数ポイント収支（合計は必ず0）
+ */
+export function calcHanchanPoints(
+  scores: HanchanScores,
+  playerOrder: string[],
+  settings: RuleSettings
+): HanchanResult {
+  const { uma, oka, startingPoints, returnPoints } = settings;
+
+  // 順位付け: 持ち点降順、同点は席順（playerOrder内のインデックスが小さい方が上位）
+  const sorted = [...playerOrder].sort((a, b) => {
+    const scoreDiff = scores[b] - scores[a];
+    if (scoreDiff !== 0) return scoreDiff;
+    return playerOrder.indexOf(a) - playerOrder.indexOf(b);
+  });
+
+  // okaポイント（千点単位整数）: oka有りの場合のみ
+  const okaBonus = oka ? ((returnPoints - startingPoints) * 4) / 1000 : 0;
+
+  // 基準点: oka有りなら returnPoints、oka無しなら startingPoints
+  const basePoint = oka ? returnPoints : startingPoints;
+
+  // a. 五捨六入で千点単位に丸める
+  const rounded: Record<string, number> = {};
+  for (const id of playerOrder) {
+    rounded[id] = roundGoshaRokunyu(scores[id]);
+  }
+
+  // b. base = (丸め後 - basePoint) / 1000
+  // c. オカボーナス（トップのみ）・ウマを加算（すべて整数）
+  const points: HanchanResult = {};
+  for (let rank = 0; rank < sorted.length; rank++) {
+    const id = sorted[rank];
+    const base = (rounded[id] - basePoint) / 1000;
+    const rankBonus = rank === 0 ? okaBonus : 0;
+    points[id] = base + rankBonus + uma[rank];
+  }
+
+  // d. 合計≠0 ならトップ sorted[0] から差分を引いてゼロサム化
+  const total = Object.values(points).reduce((sum, v) => sum + v, 0);
+  if (total !== 0) {
+    points[sorted[0]] -= total;
+  }
+
+  return points;
+}
+
+/**
  * 1半荘の清算結果（円収支）を計算する。
+ * calcHanchanPoints で整数ポイントを算出し、ratePer1000 で円換算する。
  *
  * @param scores - 持ち点マップ（playerId → 点数）
  * @param playerOrder - 席順（同点時の順位決定に使用）
@@ -40,41 +107,67 @@ export function calcHanchan(
   playerOrder: string[],
   settings: RuleSettings
 ): HanchanResult {
-  const { ratePer1000, uma, oka, startingPoints, returnPoints } = settings;
+  const { ratePer1000 } = settings;
 
-  // 順位付け: 持ち点降順、同点は席順（playerOrder内のインデックスが小さい方が上位）
-  const sorted = [...playerOrder].sort((a, b) => {
-    const scoreDiff = scores[b] - scores[a];
-    if (scoreDiff !== 0) return scoreDiff;
-    return playerOrder.indexOf(a) - playerOrder.indexOf(b);
-  });
-
-  // okaポイント（千点単位）: oka有りの場合のみ
-  const okaBonus = oka ? ((returnPoints - startingPoints) * 4) / 1000 : 0;
-
-  // 基準点: oka有りなら returnPoints、oka無しなら startingPoints
-  const basePoint = oka ? returnPoints : startingPoints;
-
-  // 各プレイヤーのポイント（千点単位、小数あり）を計算
-  const points: Record<string, number> = {};
-  for (let rank = 0; rank < sorted.length; rank++) {
-    const id = sorted[rank];
-    const base = (scores[id] - basePoint) / 1000;
-    const rankBonus = rank === 0 ? okaBonus : 0;
-    points[id] = base + rankBonus + uma[rank];
-  }
-
-  // 円換算（10円未満は四捨五入）
+  // ポイントを整数で算出し、円換算する（ポイントが整数ゼロサムなので円も厳密ゼロサム）
+  const points = calcHanchanPoints(scores, playerOrder, settings);
   const result: HanchanResult = {};
   for (const id of playerOrder) {
-    const yen = points[id] * ratePer1000;
-    result[id] = Math.round(yen / 10) * 10;
+    result[id] = points[id] * ratePer1000;
   }
 
-  // ゼロサム保証: 合計が0でない場合は差分を1位の収支で調整
+  return result;
+}
+
+/**
+ * 場代立替清算を含む最終収支を計算する。
+ *
+ * @param mahjongYen - 麻雀の円収支（calcHanchan の結果）
+ * @param feeShare - 場代の各自負担額（null の場合はゼロ扱い）
+ * @param personalExpenses - 個人分費用: playerId → 円
+ * @param feePayerId - 場代を立替えたプレイヤーID（未選択なら null）
+ * @param totalFee - 場代合計（円）
+ * @param playerOrder - 席順
+ * @returns 各プレイヤーの最終円収支（合計は必ず0）
+ * @throws 合計が0でない場合は Error
+ */
+export function calcNetBalances(
+  mahjongYen: HanchanResult,
+  feeShare: Record<string, number> | null,
+  personalExpenses: Record<string, number>,
+  feePayerId: string | null,
+  totalFee: number,
+  playerOrder: string[]
+): HanchanResult {
+  // 個人分合計
+  const personalTotal = playerOrder.reduce(
+    (sum, id) => sum + (personalExpenses[id] ?? 0),
+    0
+  );
+
+  // feePayerId が null、または（totalFee===0 かつ 個人分全0）の場合はそのまま返す
+  if (feePayerId === null || (totalFee === 0 && personalTotal === 0)) {
+    return { ...mahjongYen };
+  }
+
+  // 各自: 麻雀収支 - 場代負担 - 個人分費用
+  const result: HanchanResult = {};
+  for (const id of playerOrder) {
+    result[id] =
+      (mahjongYen[id] ?? 0) -
+      (feeShare?.[id] ?? 0) -
+      (personalExpenses[id] ?? 0);
+  }
+
+  // 立替者には場代合計と個人分合計を加算（立替分の回収）
+  result[feePayerId] += totalFee + personalTotal;
+
+  // ゼロサムガード
   const total = Object.values(result).reduce((sum, v) => sum + v, 0);
   if (total !== 0) {
-    result[sorted[0]] -= total;
+    throw new Error(
+      `最終収支の合計が0ではありません（合計: ${total}円）。入力値を確認してください。`
+    );
   }
 
   return result;
@@ -165,6 +258,30 @@ export function sumResults(results: HanchanResult[]): HanchanResult {
     }
   }
   return total;
+}
+
+/**
+ * 複数の個人分費用明細を合算し、プレイヤーごとの負担額を返す。
+ *
+ * @param items - 個人分費用明細リスト
+ * @param playerOrder - 集計対象のプレイヤーIDリスト（このID以外のキーは結果に含めない）
+ * @returns playerId → 合計負担額（playerOrder に含まれるIDのみ。値がなければ0）
+ */
+export function sumPersonalExpenseItems(
+  items: PersonalExpenseItem[],
+  playerOrder: string[]
+): Record<string, number> {
+  const result: Record<string, number> = {};
+  // playerOrder に含まれるIDのみ初期化
+  for (const id of playerOrder) {
+    result[id] = 0;
+  }
+  for (const item of items) {
+    for (const id of playerOrder) {
+      result[id] += item.amounts[id] ?? 0;
+    }
+  }
+  return result;
 }
 
 /**

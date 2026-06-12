@@ -19,11 +19,12 @@ create table public.rooms (
 -- room_state: ゲーム設定（可変）。秘密情報なし
 -- -------------------------------------------------------
 create table public.room_state (
-  room_id    uuid        primary key references public.rooms(id) on delete cascade,
-  settings   jsonb       not null,            -- RuleSettings をそのまま格納
-  total_fee  integer     not null default 0,
-  fee_mode   text        not null default 'equal' check (fee_mode in ('equal','proportional','loser')),
-  updated_at timestamptz not null default now()
+  room_id           uuid        primary key references public.rooms(id) on delete cascade,
+  settings          jsonb       not null,            -- RuleSettings をそのまま格納
+  total_fee         integer     not null default 0,
+  fee_mode          text        not null default 'equal' check (fee_mode in ('equal','proportional','loser')),
+  personal_expenses jsonb       not null default '[]'::jsonb,
+  updated_at        timestamptz not null default now()
 );
 
 -- -------------------------------------------------------
@@ -34,7 +35,7 @@ create table public.players (
   room_id      uuid     not null references public.rooms(id) on delete cascade,
   name         text     not null,
   seat_order   smallint not null check (seat_order between 1 and 8),
-  personal_yen integer  not null default 0,
+  personal_yen integer  not null default 0,  -- deprecated: room_state.personal_expenses に移行（カラムは互換のため残置）
   unique (room_id, seat_order)
 );
 
@@ -49,6 +50,11 @@ create table public.hanchans (
   created_at timestamptz not null default now(),
   unique (room_id, hanchan_no)
 );
+
+-- room_state.fee_payer_id: 場代＋個人分を店にまとめて立替払いするプレイヤー（未選択なら null）
+-- players テーブルより後でないと外部キーを張れないため alter で追加する
+alter table public.room_state
+  add column fee_payer_id uuid references public.players(id) on delete set null;
 
 create index on public.players (room_id);
 create index on public.hanchans (room_id);
@@ -192,3 +198,15 @@ grant execute on function public.get_room_by_invite(text) to anon;
 alter publication supabase_realtime add table public.room_state;
 alter publication supabase_realtime add table public.players;
 alter publication supabase_realtime add table public.hanchans;
+
+-- ============================================================
+-- 既存DBへのマイグレーション（スキーマ適用済みの環境のみ）
+-- Supabase の SQL Editor で以下を手動実行してください。
+-- ※ アプリの新バージョンをデプロイする「前」に実行すること
+-- ============================================================
+-- ALTER TABLE public.room_state
+--   ADD COLUMN IF NOT EXISTS fee_payer_id uuid
+--   REFERENCES public.players(id) ON DELETE SET NULL;
+--
+-- ALTER TABLE public.room_state
+--   ADD COLUMN IF NOT EXISTS personal_expenses jsonb NOT NULL DEFAULT '[]'::jsonb;

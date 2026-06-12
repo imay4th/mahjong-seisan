@@ -636,6 +636,133 @@
   margin: -4px 0 4px;
 }
 
+/* ===== ゲーム画面: ヘッダ行（合言葉＋設定ボタン） ===== */
+.game-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) 0 0;
+  min-height: 36px;
+}
+
+/* 設定ボタン */
+.btn-settings {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 6px 12px;
+  border-radius: var(--radius-control);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-segment);
+  border: var(--rule);
+  min-height: 36px;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.btn-settings:hover {
+  background: var(--bg-card-hover);
+  color: var(--accent);
+}
+
+/* 点数表セル: 粗点表示（score-cell-yen の後継） */
+.score-cell-pt {
+  display: block;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  line-height: 1.2;
+  margin-top: 2px;
+}
+
+.pt-plus  { color: var(--text-plus); }
+.pt-minus { color: var(--text-minus); }
+.pt-zero  { color: var(--text-zero); }
+
+/* ===== 清算画面: 立替者選択UI ===== */
+.fee-payer-select {
+  margin-bottom: var(--space-3);
+}
+
+.fee-payer-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.fee-payer-btns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.fee-payer-btn {
+  font-size: 13px;
+  padding: 6px 12px;
+  min-height: 36px;
+}
+
+/* 未選択時の注記 */
+.fee-payer-note {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-segment);
+  border-radius: var(--radius-control);
+  border-left: 3px solid rgba(47, 44, 37, 0.20);
+}
+
+/* 保存失敗時のエラー表示 */
+.fee-payer-error {
+  font-size: 12px;
+  color: var(--text-minus);
+  line-height: 1.5;
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-segment);
+  border-radius: var(--radius-control);
+  border-left: 3px solid var(--text-minus);
+}
+
+/* 選択済みサマリーカード */
+.fee-payer-summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  background: rgba(29, 92, 69, 0.06);
+  border: 1px solid rgba(29, 92, 69, 0.20);
+  border-radius: var(--radius-control);
+}
+
+.fee-payer-summary-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.fee-payer-summary-amount {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fee-payer-total {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent-fee);
+}
+
+.fee-payer-breakdown {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
 /* ===== 清算画面 ===== */
 .settlement-screen {
   gap: 0;
@@ -966,4 +1093,47 @@
 
 .settlement-actions .btn {
   flex: 1;
+}
+
+/* ===== 個人分複数明細 ===== */
+
+/* 摘要行・金額行: 既存 score-table-personal-row と同じ生成り背景 */
+.score-table-personal-memo-row,
+.score-table-personal-amount-row {
+  background: rgba(236, 231, 217, 0.50);
+}
+
+/* 摘要テキスト入力 */
+.score-cell-personal-memo {
+  width: 100%;
+  text-align: left;
+  font-size: 12px;
+  background: rgba(138, 109, 42, 0.06);
+  border-color: rgba(47, 44, 37, 0.20);
+}
+
+/* 個人分追加ボタン行: セル中央寄せ */
+.score-table-personal-add-row td {
+  text-align: center;
+  padding: var(--space-1) 0;
+}
+
+/* 個人分追加ボタン */
+.btn-add-personal {
+  width: 100%;
+  min-height: 36px;
+  padding: var(--space-1) var(--space-3);
+  background: var(--bg-segment);
+  border: 1.5px dashed rgba(47, 44, 37, 0.30);
+  border-radius: var(--radius-control);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btn-add-personal:hover {
+  background: var(--bg-card-hover);
+  border-color: rgba(47, 44, 37, 0.50);
 }
